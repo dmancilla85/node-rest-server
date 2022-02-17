@@ -1,11 +1,24 @@
 const { User, Role, Category, Product } = require("../models");
 
+const collectionsAllowed = (collection = "", collections = []) => {
+  const check = collections.includes(collection);
+
+  if (!check) {
+    throw new error(
+      `The ${collection} collection is not allowed: ${collections}`
+    );
+  }
+  return true;
+};
+
 const isRoleValid = async (role = "") => {
   const roleExists = await Role.findOne({ role });
 
   if (!roleExists) {
     throw new Error(`Role ${role} not found`);
   }
+
+  return true;
 };
 
 const emailExists = async (email = "") => {
@@ -15,6 +28,8 @@ const emailExists = async (email = "") => {
   if (checkEmail) {
     throw new Error(`Mail ${email} already registered`);
   }
+
+  return true;
 };
 
 const categoryExists = async (id = "") => {
@@ -23,6 +38,8 @@ const categoryExists = async (id = "") => {
   if (!checkId) {
     throw new Error(`Category ID ${id} is not registered`);
   }
+
+  return true;
 };
 
 const productExists = async (id = "") => {
@@ -31,6 +48,8 @@ const productExists = async (id = "") => {
   if (!checkId) {
     throw new Error(`Product ID ${id} is not registered`);
   }
+
+  return true;
 };
 
 const userIdExists = async (id = "") => {
@@ -39,6 +58,8 @@ const userIdExists = async (id = "") => {
   if (!checkId) {
     throw new Error(`ID ${id} is not registered`);
   }
+
+  return true;
 };
 
 module.exports = {
@@ -46,5 +67,6 @@ module.exports = {
   emailExists,
   userIdExists,
   categoryExists,
-  productExists
+  productExists,
+  collectionsAllowed
 };

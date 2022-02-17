@@ -7,7 +7,7 @@ const {
   getProducts,
   getProductById
 } = require("../controllers");
-const { productExists, categoryExists } = require("../helpers/db-validators");
+const { productExists, categoryExists } = require("../helpers");
 const { validarJWT, validarCampos } = require("../middlewares");
 
 const router = Router();
