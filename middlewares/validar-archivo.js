@@ -1,9 +1,9 @@
-const { response } = require("express");
+const { response } = require('express');
 
-const validateFile = (req, res = response, next) => {
+const validateFile = (req, next, res = response) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).json({
-      msg: "No files were uploaded"
+      msg: 'No files were uploaded',
     });
   }
 

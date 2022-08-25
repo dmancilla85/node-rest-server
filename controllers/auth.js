@@ -1,7 +1,7 @@
-const { response, request } = require("express");
-const bcryptjs = require("bcryptjs");
-const { generarJWT, googleVerify } = require("../helpers");
-const { User } = require("../models");
+const { response } = require('express');
+const bcryptjs = require('bcryptjs');
+const { generarJWT, googleVerify } = require('../helpers');
+const { User } = require('../models');
 
 const login = async (req, res = response) => {
   const { email, password } = req.body;
@@ -12,14 +12,14 @@ const login = async (req, res = response) => {
 
     if (!user) {
       return res.status(400).json({
-        msg: "User / password are invalids."
+        msg: 'User / password are invalids.',
       });
     }
 
     // check user
     if (!user.state) {
       return res.status(400).json({
-        msg: "User is not active."
+        msg: 'User is not active.',
       });
     }
 
@@ -28,7 +28,7 @@ const login = async (req, res = response) => {
 
     if (!validPassword) {
       return res.status(400).json({
-        msg: "User / password are invalids."
+        msg: 'User / password are invalids.',
       });
     }
 
@@ -37,12 +37,12 @@ const login = async (req, res = response) => {
 
     return res.json({
       user,
-      token
+      token,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      msg: "Something went wrong"
+      msg: 'Something went wrong',
     });
   }
 };
@@ -59,11 +59,11 @@ const googleSignIn = async (req, res = response) => {
     if (!user) {
       // create new one
       const data = {
-        email: email,
-        name: name,
-        password: ":v",
+        email,
+        name,
+        password: ':v',
         img: picture,
-        google: true
+        google: true,
       };
 
       user = new User(data);
@@ -72,7 +72,7 @@ const googleSignIn = async (req, res = response) => {
 
     if (!user.state) {
       return res.status(401).json({
-        msg: "User is blocked. Please contact the admin"
+        msg: 'User is blocked. Please contact the admin',
       });
     }
     console.log(user);
@@ -81,18 +81,20 @@ const googleSignIn = async (req, res = response) => {
 
     res.json({
       user,
-      token
+      token,
     });
+
+    return 0;
   } catch (error) {
     console.log(error);
     return res.status(400).json({
       ok: false,
-      msg: "Unable to verify google token"
+      msg: 'Unable to verify google token',
     });
   }
 };
 
 module.exports = {
   login,
-  googleSignIn
+  googleSignIn,
 };

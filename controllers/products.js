@@ -1,5 +1,5 @@
-const { response, request } = require("express");
-const { Product } = require("../models");
+const { response, request } = require('express');
+const { Product } = require('../models');
 
 // request and response added as default values to keep the type
 const getProducts = async (req = request, res = response) => {
@@ -10,30 +10,32 @@ const getProducts = async (req = request, res = response) => {
   const [count, products] = await Promise.all([
     Product.countDocuments(query),
     Product.find(query)
-      .populate("userId", "name")
-      .populate("categoryId", "name")
+      .populate('userId', 'name')
+      .populate('categoryId', 'name')
       .skip(Number(from))
-      .limit(Number(limit))
+      .limit(Number(limit)),
   ]);
 
   res.json({
     count,
-    products
+    products,
   });
 };
 
 const getProductById = async (req = request, res = response) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const product = await Product.findById(id)
-    .populate("userId", "name")
-    .populate("categoryId", "name");
+    .populate('userId', 'name')
+    .populate('categoryId', 'name');
 
   res.json(product);
 };
 
 const putProducts = async (req, res = response) => {
-  const id = req.params.id;
-  const { _id, active, userId, ...data } = req.body;
+  const { id } = req.params;
+  const {
+    _id, active, userId, ...data
+  } = req.body;
 
   data.userId = req.authUser._id;
   data.name = data.name.toUpperCase();
@@ -46,10 +48,13 @@ const putProducts = async (req, res = response) => {
   const product = await Product.findByIdAndUpdate(id, data);
 
   res.status(200).json(product);
+  return 0;
 };
 
 const postProducts = async (req, res = response) => {
-  const { name, price, description, available, categoryId } = req.body;
+  const {
+    name, price, description, available, categoryId,
+  } = req.body;
 
   const productsExists = await Product.findOne({ name });
 
@@ -64,7 +69,7 @@ const postProducts = async (req, res = response) => {
     description,
     categoryId,
     available,
-    userId: req.authUser._id
+    userId: req.authUser._id,
   };
 
   const product = new Product(data);
@@ -73,26 +78,28 @@ const postProducts = async (req, res = response) => {
   await product.save();
 
   res.status(201).json({
-    product
+    product,
   });
+
+  return 0;
 };
 
 const deleteProducts = async (req, res = response) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   // delete physically
-  //const user = await User.findByIdAndDelete(id);
+  // const user = await User.findByIdAndDelete(id);
 
   const product = await Product.findByIdAndUpdate(id, { active: false });
 
   res.json({
-    product
+    product,
   });
 };
 
 const patchProducts = (req, res = response) => {
   res.json({
-    msg: "patch API"
+    msg: 'patch API',
   });
 };
 
@@ -102,5 +109,5 @@ module.exports = {
   putProducts,
   postProducts,
   deleteProducts,
-  patchProducts
+  patchProducts,
 };

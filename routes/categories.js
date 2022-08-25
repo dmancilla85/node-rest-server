@@ -1,54 +1,54 @@
-const { Router } = require("express");
-const { check } = require("express-validator");
+const { Router } = require('express');
+const { check } = require('express-validator');
 const {
   postCategories,
   putCategories,
   deleteCategories,
   getCategories,
-  getCategoryById
-} = require("../controllers");
-const { categoryExists } = require("../helpers/db-validators");
-const { validarJWT, validarCampos } = require("../middlewares");
+  getCategoryById,
+} = require('../controllers');
+const { categoryExists } = require('../helpers/db-validators');
+const { validarJWT, validarCampos } = require('../middlewares');
 
 const router = Router();
 
-router.get("/", getCategories);
+router.get('/', getCategories);
 
 router.get(
-  "/:id",
-  [check("id", "Is not a valid ID").isMongoId().custom(categoryExists)],
-  getCategoryById
+  '/:id',
+  [check('id', 'Is not a valid ID').isMongoId().custom(categoryExists)],
+  getCategoryById,
 );
 
 router.post(
-  "/",
+  '/',
   [
     validarJWT,
-    check("name", "Category name is required").not().isEmpty(),
-    validarCampos
+    check('name', 'Category name is required').not().isEmpty(),
+    validarCampos,
   ],
-  postCategories
+  postCategories,
 );
 
 router.put(
-  "/:id",
+  '/:id',
   [
     validarJWT,
-    check("id", "Is not a valid ID").isMongoId().custom(categoryExists),
-    check("name", "Category name is required").not().isEmpty(),
-    validarCampos
+    check('id', 'Is not a valid ID').isMongoId().custom(categoryExists),
+    check('name', 'Category name is required').not().isEmpty(),
+    validarCampos,
   ],
-  putCategories
+  putCategories,
 );
 
 router.delete(
-  "/:id",
+  '/:id',
   [
     validarJWT,
-    check("id", "Is not a valid ID").isMongoId().custom(categoryExists),
-    validarCampos
+    check('id', 'Is not a valid ID').isMongoId().custom(categoryExists),
+    validarCampos,
   ],
-  deleteCategories
+  deleteCategories,
 );
 
 module.exports = router;

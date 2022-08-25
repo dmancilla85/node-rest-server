@@ -1,30 +1,30 @@
-const { response } = require("express");
-const jwt = require("jsonwebtoken");
-const { User } = require("../models");
+const { response } = require('express');
+const jwt = require('jsonwebtoken');
+const { User } = require('../models');
 
-const validarJWT = async (req, res = response, next) => {
-  const token = req.header("x-token");
+const validarJWT = async (req, next, res = response) => {
+  const token = req.header('x-token');
 
   if (!token) {
     return res.status(401).json({
-      msg: "There's no token in the request"
+      msg: "There's no token in the request",
     });
   }
 
   try {
     const { uid } = jwt.verify(token, process.env.SECRET_KEY);
 
-    authUser = await User.findById(uid);
+    const authUser = await User.findById(uid);
 
     if (!authUser) {
       return res.status(401).json({
-        msg: "Nonexistent user"
+        msg: 'Nonexistent user',
       });
     }
 
     if (!authUser.state) {
       return res.status(401).json({
-        msg: "Unauthorized user"
+        msg: 'Unauthorized user',
       });
     }
 
@@ -33,9 +33,11 @@ const validarJWT = async (req, res = response, next) => {
   } catch (error) {
     console.log(error);
     return res.status(401).json({
-      msg: "Unauthorized token"
+      msg: 'Unauthorized token',
     });
   }
+
+  return 0;
 };
 
 module.exports = { validarJWT };

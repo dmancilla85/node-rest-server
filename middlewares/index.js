@@ -1,11 +1,13 @@
-const validaCampos = require("../middlewares/validar-campos");
-const validarJWT = require("../middlewares/validar-jwt");
-const validarArchivo = require("../middlewares/validar-archivo");
-const validaRoles = require("../middlewares/validar-roles");
+const validaCampos = require('./validar-campos');
+const validarJWT = require('./validar-jwt');
+const validarArchivo = require('./validar-archivo');
+const validaRoles = require('./validar-roles');
+const myLogger = require('./logger');
 
 module.exports = {
   ...validaCampos,
   ...validarJWT,
   ...validaRoles,
-  ...validarArchivo
+  ...validarArchivo,
+  ...myLogger,
 };

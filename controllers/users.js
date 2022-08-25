@@ -1,6 +1,6 @@
-const { response, request } = require("express");
-const crypt = require("bcryptjs");
-const { User } = require("../models");
+const { response, request } = require('express');
+const crypt = require('bcryptjs');
+const { User } = require('../models');
 
 // request and response added as default values to keep the type
 const getUsers = async (req = request, res = response) => {
@@ -10,18 +10,20 @@ const getUsers = async (req = request, res = response) => {
 
   const [count, users] = await Promise.all([
     User.countDocuments(query),
-    User.find(query).skip(Number(from)).limit(Number(limit))
+    User.find(query).skip(Number(from)).limit(Number(limit)),
   ]);
 
   res.json({
     count,
-    users
+    users,
   });
 };
 
 const putUsers = async (req, res = response) => {
-  const id = req.params.id;
-  const { _id, password, google, ...resto } = req.body;
+  const { id } = req.params;
+  const {
+    _id, password, google, ...resto
+  } = req.body;
 
   const user = await User.findByIdAndUpdate(id, resto);
 
@@ -35,8 +37,12 @@ const putUsers = async (req, res = response) => {
 };
 
 const postUsers = async (req, res = response) => {
-  const { name, email, password, role } = req.body;
-  const user = new User({ name, email, password, role });
+  const {
+    name, email, password, role,
+  } = req.body;
+  const user = new User({
+    name, email, password, role,
+  });
 
   // encrypt the password
   const salt = crypt.genSaltSync();
@@ -46,27 +52,27 @@ const postUsers = async (req, res = response) => {
   await user.save();
 
   res.json({
-    msg: "post API",
-    user: user
+    msg: 'post API',
+    user,
   });
 };
 
 const deleteUsers = async (req, res = response) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   // delete physically
-  //const user = await User.findByIdAndDelete(id);
+  // const user = await User.findByIdAndDelete(id);
 
   const user = await User.findByIdAndUpdate(id, { state: false });
 
   res.json({
-    user
+    user,
   });
 };
 
 const patchUsers = (req, res = response) => {
   res.json({
-    msg: "patch API"
+    msg: 'patch API',
   });
 };
 
@@ -75,5 +81,5 @@ module.exports = {
   putUsers,
   postUsers,
   deleteUsers,
-  patchUsers
+  patchUsers,
 };

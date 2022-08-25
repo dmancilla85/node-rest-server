@@ -1,13 +1,13 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const myLogger = require('../middlewares/logger');
 
 const dbConnection = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_CONN);
-
-    console.log("MongoDB: Conexión exitosa");
+    myLogger.info('MongoDB: Conexión exitosa');
   } catch (error) {
-    console.log(error);
-    throw new Error("Error al conectar la base de datos");
+    myLogger.error(error);
+    throw new Error('Error al conectar la base de datos');
   }
 };
 

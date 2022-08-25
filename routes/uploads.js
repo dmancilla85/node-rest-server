@@ -1,41 +1,37 @@
-const { Router } = require("express");
-const { check } = require("express-validator");
+const { Router } = require('express');
+const { check } = require('express-validator');
 const {
   uploadFiles,
-  updateImage,
   getImage,
-  updateImageCloudinary
-} = require("../controllers/uploads");
-const { collectionsAllowed } = require("../helpers");
-const { validarCampos, validateFile } = require("../middlewares");
+  updateImageCloudinary,
+} = require('../controllers/uploads');
+const { collectionsAllowed } = require('../helpers');
+const { validarCampos, validateFile } = require('../middlewares');
+
 const router = Router();
 
 router.get(
-  "/:collection/:id",
+  '/:collection/:id',
   [
-    check("id").isMongoId(),
-    check("collection").custom((c) =>
-      collectionsAllowed(c, ["users", "products"])
-    ),
-    validarCampos
+    check('id').isMongoId(),
+    check('collection').custom((c) => collectionsAllowed(c, ['users', 'products'])),
+    validarCampos,
   ],
-  getImage
+  getImage,
 );
 
-router.post("/", validateFile, uploadFiles);
+router.post('/', validateFile, uploadFiles);
 
 router.put(
-  "/:collection/:id",
+  '/:collection/:id',
   [
     validateFile,
-    check("id").isMongoId(),
-    check("collection").custom((c) =>
-      collectionsAllowed(c, ["users", "products"])
-    ),
-    validarCampos
+    check('id').isMongoId(),
+    check('collection').custom((c) => collectionsAllowed(c, ['users', 'products'])),
+    validarCampos,
   ],
-  updateImageCloudinary
-  //updateImage
+  updateImageCloudinary,
+  // updateImage
 );
 
 module.exports = router;

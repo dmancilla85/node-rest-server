@@ -1,17 +1,19 @@
-const { User, Role, Category, Product } = require("../models");
+const {
+  User, Role, Category, Product,
+} = require('../models');
 
-const collectionsAllowed = (collection = "", collections = []) => {
+const collectionsAllowed = (collection = '', collections = []) => {
   const check = collections.includes(collection);
 
   if (!check) {
-    throw new error(
-      `The ${collection} collection is not allowed: ${collections}`
+    throw new Error(
+      `The ${collection} collection is not allowed: ${collections}`,
     );
   }
   return true;
 };
 
-const isRoleValid = async (role = "") => {
+const isRoleValid = async (role = '') => {
   const roleExists = await Role.findOne({ role });
 
   if (!roleExists) {
@@ -21,7 +23,7 @@ const isRoleValid = async (role = "") => {
   return true;
 };
 
-const emailExists = async (email = "") => {
+const emailExists = async (email = '') => {
   // check if mail exists
   const checkEmail = await User.findOne({ email });
 
@@ -32,7 +34,7 @@ const emailExists = async (email = "") => {
   return true;
 };
 
-const categoryExists = async (id = "") => {
+const categoryExists = async (id = '') => {
   const checkId = await Category.findById(id);
 
   if (!checkId) {
@@ -42,7 +44,7 @@ const categoryExists = async (id = "") => {
   return true;
 };
 
-const productExists = async (id = "") => {
+const productExists = async (id = '') => {
   const checkId = await Product.findById(id);
 
   if (!checkId) {
@@ -52,7 +54,7 @@ const productExists = async (id = "") => {
   return true;
 };
 
-const userIdExists = async (id = "") => {
+const userIdExists = async (id = '') => {
   const checkId = await User.findById(id);
 
   if (!checkId) {
@@ -68,5 +70,5 @@ module.exports = {
   userIdExists,
   categoryExists,
   productExists,
-  collectionsAllowed
+  collectionsAllowed,
 };
