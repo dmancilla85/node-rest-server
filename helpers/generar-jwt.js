@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const winstonLogger = require('../middlewares');
 
-const generarJWT = async (uid = '') => new Promise((resolve, reject) => {
+const generateJWT = async (uid = '') => new Promise((resolve, reject) => {
   const payload = { uid };
   jwt.sign(
     payload,
@@ -10,13 +11,14 @@ const generarJWT = async (uid = '') => new Promise((resolve, reject) => {
     },
     (err, token) => {
       if (err) {
-        // console.log(err);
-        reject(new Error('No se pudo generar el token'));
+        winstonLogger.error(`Can't generate the token with payload ${payload}`);
+        reject(new Error(`Can't generate the token with payload ${payload}`));
       } else {
+        winstonLogger.debug('Token generated.');
         resolve(token);
       }
     },
   );
 });
 
-module.exports = { generarJWT };
+module.exports = { generateJWT };

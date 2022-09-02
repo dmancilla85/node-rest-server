@@ -29,16 +29,16 @@ const productionFormat = format.combine(
   format.printf(formatParams),
 );
 
-let myLogger;
+let winstonLogger;
 
 if (process.env.NODE_ENV !== 'production') {
-  myLogger = createLogger({
+  winstonLogger = createLogger({
     log_level,
     format: developmentFormat,
     transports: [new transports.Console()],
   });
 } else {
-  myLogger = createLogger({
+  winstonLogger = createLogger({
     log_level,
     format: productionFormat,
     transports: [
@@ -48,4 +48,4 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-module.exports = myLogger;
+module.exports = winstonLogger;

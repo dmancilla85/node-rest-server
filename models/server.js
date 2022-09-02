@@ -3,7 +3,7 @@ const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const morgan = require('morgan');
 const { dbConnection } = require('../database/config');
-const myLogger = require('../middlewares/logger');
+const winstonLogger = require('../middlewares/winston-logger');
 
 class Server {
   constructor() {
@@ -85,7 +85,7 @@ class Server {
 
   listen() {
     this.app.listen(this.port, () => {
-      myLogger.info(`Example app listening at http/localhost:${this.port}`);
+      winstonLogger.info(`Example app listening at http/localhost:${this.port}`);
     });
   }
 }

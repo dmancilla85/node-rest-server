@@ -1,8 +1,16 @@
 const { response } = require('express');
 const bcryptjs = require('bcryptjs');
-const { generarJWT, googleVerify } = require('../helpers');
+const { StatusCodes } = require('http-status-codes');
+const { generateJWT, googleVerify } = require('../helpers');
 const { User } = require('../models');
+const winstonLogger = require('../middlewares');
 
+/**
+ * Login user
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const login = async (req, res = response) => {
   const { email, password } = req.body;
 
@@ -11,15 +19,17 @@ const login = async (req, res = response) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({
-        msg: 'User / password are invalids.',
+      winstonLogger.warning(`User with email ${email} not exists.`);
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        msg: `User with email ${email} not exists.`,
       });
     }
 
     // check user
     if (!user.state) {
-      return res.status(400).json({
-        msg: 'User is not active.',
+      winstonLogger.warning(`User ${user.name} is inactive`);
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        msg: `User ${user.name} is inactive`,
       });
     }
 
@@ -27,26 +37,33 @@ const login = async (req, res = response) => {
     const validPassword = bcryptjs.compareSync(password, user.password);
 
     if (!validPassword) {
-      return res.status(400).json({
-        msg: 'User / password are invalids.',
+      winstonLogger.warning(`User with email ${email} has entered an invalid password.`);
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        msg: `User with email ${email} has entered an invalid password.`,
       });
     }
 
-    // generar JWT
-    const token = await generarJWT(user._id);
+    // generate JWT
+    const token = await generateJWT(user._id);
 
-    return res.json({
+    return res.status(StatusCodes.OK).json({
       user,
       token,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      msg: 'Something went wrong',
+    winstonLogger.error(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      msg: `Something went wrong: ${error}`,
     });
   }
 };
 
+/**
+ * Google Single Sign On function
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const googleSignIn = async (req, res = response) => {
   const { id_token } = req.body;
 
@@ -71,23 +88,24 @@ const googleSignIn = async (req, res = response) => {
     }
 
     if (!user.state) {
-      return res.status(401).json({
-        msg: 'User is blocked. Please contact the admin',
+      winstonLogger.warning(`User ${user.name} is blocked`);
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        msg: `User ${user.name} is blocked. Please contact the admin`,
       });
     }
-    console.log(user);
     // generar JWT
-    const token = await generarJWT(user._id);
+    const token = await generateJWT(user._id);
 
-    res.json({
+    res.status(StatusCodes.OK).json({
       user,
       token,
     });
 
+    winstonLogger.debug(`User ${user.name} logged succesfully.`);
     return 0;
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({
+    winstonLogger.error('Unable to verify Google token.');
+    return res.status(StatusCodes.UNAUTHORIZED).json({
       ok: false,
       msg: 'Unable to verify google token',
     });

@@ -4,6 +4,7 @@ const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
 const { uploadFile } = require('../helpers');
 const { User, Product } = require('../models');
+const winstonLogger = require('../middlewares');
 
 cloudinary.config(process.env.CLOUDINARY_URL);
 
@@ -192,11 +193,10 @@ const getImage = async (req, res = response) => {
               await imageBlob.arrayBuffer().then((arrayBuffer) => Buffer.from(arrayBuffer, 'binary')),
               (err) => {
                 if (err) throw err;
-                console.log('File is created successfully.');
+                winstonLogger.info('File is created successfully.');
                 return res.sendFile('C:/sandbox/node/rest-server/uploads/users/temp.jpg');
               },
             );
-            console.log('enviar archivo.,..');
           });
       } else {
         const imagePath = path.join(
