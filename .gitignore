@@ -1,5 +1,6 @@
 node_modules/
 /uploads/**
+/logs/**
 uploads/products/**.*
 uploads/users/**.*
 .env

@@ -7,6 +7,7 @@ const {
 } = require('../helpers/db-validators');
 const {
   getUsers,
+  getUserById,
   putUsers,
   postUsers,
   deleteUsers,
@@ -17,6 +18,15 @@ const { validarCampos, validarJWT, hasRoles } = require('../middlewares');
 const router = Router();
 
 router.get('', getUsers);
+
+router.get(
+  '/:id',
+  [
+    check('id', 'Is not a valid ID').isMongoId(),
+    validarCampos,
+  ],
+  getUserById,
+);
 
 router.post(
   '',

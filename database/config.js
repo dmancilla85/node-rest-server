@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
-const winstonLogger = require('../middlewares/winston-logger');
+const { winstonLogger } = require('../helpers');
 
 const dbConnection = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_CONN);
-    winstonLogger.info('MongoDB: Conexión exitosa');
+    mongoose.connect(process.env.MONGODB_CONN);
+    winstonLogger.info('Successful connection to MongoDB');
   } catch (error) {
-    winstonLogger.error(error);
-    throw new Error('Error al conectar la base de datos');
+    winstonLogger.error('Failed to connect MongoDB server');
+    winstonLogger.error(error.message);
+    throw new Error('Failed to connect MongoDB server');
   }
 };
 

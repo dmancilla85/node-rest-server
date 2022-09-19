@@ -3,7 +3,8 @@ const bcryptjs = require('bcryptjs');
 const { StatusCodes } = require('http-status-codes');
 const { generateJWT, googleVerify } = require('../helpers');
 const { User } = require('../models');
-const winstonLogger = require('../middlewares');
+const { winstonLogger } = require('../helpers');
+const ProblemDetails = require('../helpers/problem-details');
 
 /**
  * Login user
@@ -19,28 +20,49 @@ const login = async (req, res = response) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      winstonLogger.warning(`User with email ${email} not exists.`);
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        msg: `User with email ${email} not exists.`,
-      });
+      const msg = `User with email ${email} not exists.`;
+      winstonLogger.warn(msg);
+      return res.status(StatusCodes.BAD_REQUEST)
+        .set('Content-Type', 'application/problem+json')
+        .json(ProblemDetails.create(
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/login/invalid-user',
+          req.originalUrl,
+          StatusCodes.BAD_REQUEST,
+        ));
     }
 
     // check user
     if (!user.state) {
-      winstonLogger.warning(`User ${user.name} is inactive`);
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        msg: `User ${user.name} is inactive`,
-      });
+      const msg = `User ${user.name} is inactive`;
+      winstonLogger.warn(msg);
+      return res.status(StatusCodes.BAD_REQUEST)
+        .set('Content-Type', 'application/problem+json')
+        .json(ProblemDetails.create(
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/login/invalid-user',
+          req.originalUrl,
+          StatusCodes.BAD_REQUEST,
+        ));
     }
 
     // verify password
     const validPassword = bcryptjs.compareSync(password, user.password);
 
     if (!validPassword) {
-      winstonLogger.warning(`User with email ${email} has entered an invalid password.`);
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        msg: `User with email ${email} has entered an invalid password.`,
-      });
+      const msg = `User with email ${email} has entered an invalid password.`;
+      winstonLogger.warn(msg);
+      return res.status(StatusCodes.BAD_REQUEST)
+        .set('Content-Type', 'application/problem+json')
+        .json(ProblemDetails.create(
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/login/invalid-password',
+          req.originalUrl,
+          StatusCodes.BAD_REQUEST,
+        ));
     }
 
     // generate JWT
@@ -51,10 +73,17 @@ const login = async (req, res = response) => {
       token,
     });
   } catch (error) {
-    winstonLogger.error(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      msg: `Something went wrong: ${error}`,
-    });
+    winstonLogger.error(error.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Some parameters are invalid.',
+        `Something went wrong: ${error.message}`,
+        'https://example.com/login/invalid-user',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
   }
 };
 
@@ -88,7 +117,7 @@ const googleSignIn = async (req, res = response) => {
     }
 
     if (!user.state) {
-      winstonLogger.warning(`User ${user.name} is blocked`);
+      winstonLogger.warn(`User ${user.name} is blocked`);
       return res.status(StatusCodes.UNAUTHORIZED).json({
         msg: `User ${user.name} is blocked. Please contact the admin`,
       });
@@ -96,13 +125,12 @@ const googleSignIn = async (req, res = response) => {
     // generar JWT
     const token = await generateJWT(user._id);
 
-    res.status(StatusCodes.OK).json({
+    winstonLogger.debug(`User ${user.name} logged succesfully.`);
+
+    return res.status(StatusCodes.OK).json({
       user,
       token,
     });
-
-    winstonLogger.debug(`User ${user.name} logged succesfully.`);
-    return 0;
   } catch (error) {
     winstonLogger.error('Unable to verify Google token.');
     return res.status(StatusCodes.UNAUTHORIZED).json({

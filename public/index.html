@@ -42,7 +42,9 @@
           })
           .catch(console.warn);
 
-        location.reload();
+        //location.reload();
+
+        console.log(`Google token is ${response.credential}`)
       }
 
       const button = document.getElementById("google-sign-out");

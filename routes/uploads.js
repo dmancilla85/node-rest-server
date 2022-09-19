@@ -4,6 +4,7 @@ const {
   uploadFiles,
   getImage,
   updateImageCloudinary,
+  updateLocalImage,
 } = require('../controllers/uploads');
 const { collectionsAllowed } = require('../helpers');
 const { validarCampos, validateFile } = require('../middlewares');
@@ -30,8 +31,18 @@ router.put(
     check('collection').custom((c) => collectionsAllowed(c, ['users', 'products'])),
     validarCampos,
   ],
+  updateLocalImage,
+);
+
+router.put(
+  '/cloud/:collection/:id',
+  [
+    validateFile,
+    check('id').isMongoId(),
+    check('collection').custom((c) => collectionsAllowed(c, ['users', 'products'])),
+    validarCampos,
+  ],
   updateImageCloudinary,
-  // updateImage
 );
 
 module.exports = router;

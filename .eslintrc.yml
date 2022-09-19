@@ -12,7 +12,5 @@ rules: {
   no-underscore-dangle: 0,
   # variables without camelcase naming
   camelcase: 0,
-  global-require: 0,
-  # to REMOVE
-  consistent-return: 0
+  global-require: 0
 }

@@ -1,13 +1,11 @@
-const validaCampos = require('./validar-campos');
-const validarJWT = require('./validar-jwt');
-const validarArchivo = require('./validar-archivo');
-const validaRoles = require('./validar-roles');
-const { winstonLogger } = require('./winston-logger');
+const validaCampos = require('./validate-fields');
+const validarJWT = require('./validate-jwt');
+const validarArchivo = require('./validate-file');
+const validaRoles = require('./validate-roles');
 
 module.exports = {
   ...validaCampos,
   ...validarJWT,
   ...validaRoles,
   ...validarArchivo,
-  winstonLogger,
 };

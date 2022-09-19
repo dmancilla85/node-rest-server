@@ -16,7 +16,10 @@ router.get('/', getProducts);
 
 router.get(
   '/:id',
-  [check('id', 'Is not a valid ID').isMongoId().custom(productExists)],
+  [
+    check('id', 'Is not a valid ID').isMongoId().custom(productExists),
+    validarCampos,
+  ],
   getProductById,
 );
 

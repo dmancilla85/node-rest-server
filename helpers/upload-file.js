@@ -1,5 +1,6 @@
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const winstonLogger = require('./winston-logger');
 
 const uploadFile = (
   files,
@@ -11,8 +12,10 @@ const uploadFile = (
   const extension = splittedName[splittedName.length - 1];
 
   if (!validExtensions.includes(extension)) {
+    const msg = `The ${extension} extension, is not allowed: ${validExtensions}`;
+    winstonLogger.error(msg);
     reject(
-      new Error(`The ${extension} extension, is not allowed: ${validExtensions}`),
+      new Error(msg),
     );
   }
 
@@ -21,10 +24,12 @@ const uploadFile = (
 
   sampleFile.mv(uploadPath, (err) => {
     if (err) {
+      winstonLogger.error(err.message);
       reject(err);
     }
   });
 
   resolve(nameTemp);
 });
+
 module.exports = { uploadFile };

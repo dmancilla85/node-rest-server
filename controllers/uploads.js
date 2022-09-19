@@ -1,13 +1,23 @@
 const { response } = require('express');
+const { dirname } = require('path');
+
+const appDir = dirname(require.main.filename);
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
+const { StatusCodes } = require('http-status-codes');
 const { uploadFile } = require('../helpers');
 const { User, Product } = require('../models');
-const winstonLogger = require('../middlewares');
+const { winstonLogger } = require('../helpers');
+const ProblemDetails = require('../helpers/problem-details');
 
 cloudinary.config(process.env.CLOUDINARY_URL);
 
+/**
+ * Check if string is a valid URL
+ * @param {*} string
+ * @returns
+ */
 const isValidHttpUrl = (string) => {
   let url;
 
@@ -20,25 +30,60 @@ const isValidHttpUrl = (string) => {
   return url.protocol === 'http:' || url.protocol === 'https:';
 };
 
+/**
+ * Upload a file to server
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const uploadFiles = async (req, res = response) => {
   if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send('No files were uploaded');
+    const msg = 'No files were uploaded';
+    winstonLogger.warn(msg);
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/file-not-found',
+        req.originalUrl,
+        StatusCodes.BAD_REQUEST,
+      ));
   }
 
   try {
     const fileName = await uploadFile(req.files);
 
-    res.json({
-      fileName,
-    });
+    res
+      .status(StatusCodes.OK)
+      .json({
+        fileName,
+      });
   } catch (error) {
-    res.status(500).json({ msg: error });
+    winstonLogger.error(error.message);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Something went wrong',
+        error.message,
+        'https://example.com/collections/internal-error',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
   }
 
   return 0;
 };
 
-const updateImage = async (req, res = response) => {
+/**
+ * Update product or user local image
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
+const updateLocalImage = async (req, res = response) => {
   const { id, collection } = req.params;
 
   let model;
@@ -48,9 +93,18 @@ const updateImage = async (req, res = response) => {
       model = await User.findById(id);
 
       if (!model) {
-        return res.status(400).json({
-          msg: `User with ${id} not exists`,
-        });
+        const msg = `User with ${id} not exists`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .set('Content-Type', 'application/problem+json')
+          .json(ProblemDetails.create(
+            'Some parameters are invalid.',
+            msg,
+            'https://example.com/collections/id-not-found',
+            req.originalUrl,
+            StatusCodes.BAD_REQUEST,
+          ));
       }
       break;
 
@@ -58,13 +112,31 @@ const updateImage = async (req, res = response) => {
       model = await Product.findById(id);
 
       if (!model) {
-        return res.status(400).json({
-          msg: `Product with ${id} not exists`,
-        });
+        const msg = `Product with ${id} not exists`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .set('Content-Type', 'application/problem+json')
+          .json(ProblemDetails.create(
+            'Some parameters are invalid.',
+            msg,
+            'https://example.com/collections/id-not-found',
+            req.originalUrl,
+            StatusCodes.BAD_REQUEST,
+          ));
       }
       break;
     default:
-      return res.status(500).json({ msg: 'Method not implemented' });
+      return res
+        .status(StatusCodes.NOT_IMPLEMENTED)
+        .set('Content-Type', 'application/problem+json')
+        .json(ProblemDetails.create(
+          'Some parameters are invalid.',
+          `Ups! Upload for ${collection} not implemented`,
+          'https://example.com/collections/not-implemented',
+          req.originalUrl,
+          StatusCodes.NOT_IMPLEMENTED,
+        ));
   }
 
   try {
@@ -82,7 +154,17 @@ const updateImage = async (req, res = response) => {
       }
     }
   } catch (error) {
-    return res.status(500).json({ msg: error });
+    winstonLogger.error(error.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Something went wrong',
+        error.message,
+        'https://example.com/collections/internal-error',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
   }
 
   try {
@@ -91,12 +173,28 @@ const updateImage = async (req, res = response) => {
     model.img = fileName;
     await model.save();
   } catch (error) {
-    return res.status(500).json({ msg: error });
+    winstonLogger.error(error.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Something went wrong',
+        error.message,
+        'https://example.com/collections/internal-error',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
   }
 
   return res.json(model);
 };
 
+/**
+ * Update uploaded image in Cloudinary
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const updateImageCloudinary = async (req, res = response) => {
   const { id, collection } = req.params;
 
@@ -107,9 +205,18 @@ const updateImageCloudinary = async (req, res = response) => {
       model = await User.findById(id);
 
       if (!model) {
-        return res.status(400).json({
-          msg: `User with ${id} not exists`,
-        });
+        const msg = `User with ID ${id} not exists`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .set('Content-Type', 'application/problem+json')
+          .json(ProblemDetails.create(
+            'Some parameters are invalid.',
+            msg,
+            'https://example.com/collections/id-not-found',
+            req.originalUrl,
+            StatusCodes.BAD_REQUEST,
+          ));
       }
       break;
 
@@ -117,13 +224,32 @@ const updateImageCloudinary = async (req, res = response) => {
       model = await Product.findById(id);
 
       if (!model) {
-        return res.status(400).json({
-          msg: `Product with ${id} not exists`,
-        });
+        const msg = `Product with ID ${id} not exists`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .set('Content-Type', 'application/problem+json')
+          .json(ProblemDetails.create(
+            'Some parameters are invalid.',
+            msg,
+            'https://example.com/collections/id-not-found',
+            req.originalUrl,
+            StatusCodes.BAD_REQUEST,
+          ));
       }
       break;
     default:
-      return res.status(500).json({ msg: 'Method not implemented' });
+      winstonLogger.warn('Method not implemented');
+      return res
+        .status(StatusCodes.NOT_IMPLEMENTED)
+        .set('Content-Type', 'application/problem+json')
+        .json(ProblemDetails.create(
+          'Some parameters are invalid.',
+          `Ups! Upload for ${collection} not implemented`,
+          'https://example.com/collections/not-implemented',
+          req.originalUrl,
+          StatusCodes.NOT_IMPLEMENTED,
+        ));
   }
 
   try {
@@ -135,7 +261,17 @@ const updateImageCloudinary = async (req, res = response) => {
       cloudinary.uploader.destroy(plublic_id);
     }
   } catch (error) {
-    return res.status(500).json({ msg: error });
+    winstonLogger.error(error.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Something went wrong',
+        error.message,
+        'https://example.com/collections/internal-error',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
   }
 
   try {
@@ -145,12 +281,30 @@ const updateImageCloudinary = async (req, res = response) => {
     model.img = secure_url;
     await model.save();
   } catch (error) {
-    return res.status(500).json({ msg: error });
+    winstonLogger.error(error.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Something went wrong',
+        error.message,
+        'https://example.com/collections/internal-error',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
   }
 
-  return res.json(model);
+  return res
+    .status(StatusCodes.OK)
+    .json(model);
 };
 
+/**
+ * Get a cloudinary or local image
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const getImage = async (req, res = response) => {
   const { id, collection } = req.params;
 
@@ -161,9 +315,18 @@ const getImage = async (req, res = response) => {
       model = await User.findById(id);
 
       if (!model) {
-        return res.status(400).json({
-          msg: `User with ${id} not exists`,
-        });
+        const msg = `User with ID ${id} not exists`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .set('Content-Type', 'application/problem+json')
+          .json(ProblemDetails.create(
+            'Some parameters are invalid.',
+            msg,
+            'https://example.com/collections/id-not-found',
+            req.originalUrl,
+            StatusCodes.BAD_REQUEST,
+          ));
       }
       break;
 
@@ -171,61 +334,112 @@ const getImage = async (req, res = response) => {
       model = await Product.findById(id);
 
       if (!model) {
-        return res.status(400).json({
-          msg: `Product with ${id} not exists`,
-        });
+        const msg = `Product with ID ${id} not exists`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .set('Content-Type', 'application/problem+json')
+          .json(ProblemDetails.create(
+            'Some parameters are invalid.',
+            msg,
+            'https://example.com/collections/id-not-found',
+            req.originalUrl,
+            StatusCodes.BAD_REQUEST,
+          ));
       }
       break;
     default:
-      return res.status(500).json({ msg: 'Method not implemented' });
+      winstonLogger.warn(`Method for ${collection} not implemented`);
+      return res
+        .status(StatusCodes.NOT_IMPLEMENTED)
+        .set('Content-Type', 'application/problem+json')
+        .json(ProblemDetails.create(
+          'Some parameters are invalid.',
+          `Ups! Upload for ${collection} not implemented`,
+          'https://example.com/collections/not-implemented',
+          req.originalUrl,
+          StatusCodes.NOT_IMPLEMENTED,
+        ));
   }
 
   try {
-    // remove old image from server
-    // TODO: fix this shit!!
     if (model.img) {
+      const filename = model.img.split('/').pop();
+      const filepath = `${appDir}/uploads/users/${filename}`;
+
       if (isValidHttpUrl(model.img)) {
         await fetch(model.img)
           .then((resp) => resp.blob())
           .then(async (imageBlob) => {
-            await fs.writeFile(
-              'C:/sandbox/node/rest-server/uploads/users/temp.jpg',
+            fs.writeFile(
+              filepath,
               await imageBlob.arrayBuffer().then((arrayBuffer) => Buffer.from(arrayBuffer, 'binary')),
               (err) => {
-                if (err) throw err;
-                winstonLogger.info('File is created successfully.');
-                return res.sendFile('C:/sandbox/node/rest-server/uploads/users/temp.jpg');
+                if (err) {
+                  winstonLogger.error(err.message);
+                  throw err;
+                }
+                winstonLogger.info(`File ${filename} was obtained successfully.`);
+                return res
+                  .status(StatusCodes.OK)
+                  .sendFile(filepath);
               },
             );
           });
       } else {
         const imagePath = path.join(
           __dirname,
-          '../uploads/',
+          `${appDir}/uploads/`,
           collection,
           model.img,
         );
 
         if (fs.existsSync(imagePath)) {
-          return res.sendFile(imagePath);
+          winstonLogger.info(`File ${filename} was obtained successfully.`);
+          return res
+            .status(StatusCodes.OK)
+            .sendFile(imagePath);
         }
       }
     }
   } catch (error) {
-    return res.status(500).json({ msg: error });
+    winstonLogger.error(error.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Something went wrong',
+        error.message,
+        'https://example.com/collections/internal-error',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
   }
 
-  /* try {
+  try {
     const notFoundPath = path.join(__dirname, '../assets/', 'no-image.jpg');
-    console.log('no hy archivo');
+    const filename = model.img?.split('/').pop();
+
+    winstonLogger.warn(`File not found: ${filename}`);
     if (fs.existsSync(notFoundPath)) {
-      res.sendFile(notFoundPath);
+      return res.status(StatusCodes.NOT_FOUND)
+        .sendFile(notFoundPath);
     }
   } catch (error) {
-    return res.status(500).json({ msg: error });
-  } */
+    winstonLogger.error(error.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Something went wrong',
+        error.message,
+        'https://example.com/collections/internal-error',
+        req.originalUrl,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      ));
+  }
 };
 
 module.exports = {
-  getImage, uploadFiles, updateImage, updateImageCloudinary,
+  getImage, uploadFiles, updateLocalImage, updateImageCloudinary,
 };

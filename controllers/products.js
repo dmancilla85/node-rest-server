@@ -1,7 +1,15 @@
 const { response, request } = require('express');
+const { StatusCodes } = require('http-status-codes');
+const { winstonLogger } = require('../helpers');
+const ProblemDetails = require('../helpers/problem-details');
 const { Product } = require('../models');
 
-// request and response added as default values to keep the type
+/**
+ * Get all products
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const getProducts = async (req = request, res = response) => {
   const { limit = 5, from = 0 } = req.query;
 
@@ -16,21 +24,67 @@ const getProducts = async (req = request, res = response) => {
       .limit(Number(limit)),
   ]);
 
-  res.json({
-    count,
-    products,
-  });
+  if (count === 0) {
+    const msg = 'There is no products';
+    winstonLogger.warn(msg);
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Empty collection',
+        msg,
+        'https://example.com/collections/empty',
+        req.originalUrl,
+        StatusCodes.NOT_FOUND,
+      ));
+  }
+
+  return res
+    .status(StatusCodes.OK)
+    .json({
+      count,
+      products,
+    });
 };
 
+/**
+ * Get product by ID
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const getProductById = async (req = request, res = response) => {
   const { id } = req.params;
+
   const product = await Product.findById(id)
     .populate('userId', 'name')
     .populate('categoryId', 'name');
 
-  res.json(product);
+  if (product === null) {
+    const msg = `Product with ID ${id} doesn't exist`;
+    winstonLogger.warn(msg);
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Item not found',
+        msg,
+        'https://example.com/collections/id-not-found',
+        req.originalUrl,
+        StatusCodes.NOT_FOUND,
+      ));
+  }
+
+  return res.status(StatusCodes.OK)
+    .json(product);
 };
 
+/**
+ * Update product by ID
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const putProducts = async (req, res = response) => {
   const { id } = req.params;
   const {
@@ -41,16 +95,50 @@ const putProducts = async (req, res = response) => {
   data.name = data.name.toUpperCase();
 
   const productExists = await Product.findOne({ name: data.name });
+
   if (productExists && productExists._id.toString() !== id) {
-    return res.status(400).json(`The product ${data.name} already exists`);
+    const msg = `The product ${data.name} already exists`;
+    winstonLogger.warning(msg);
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Possible duplicated item',
+        msg,
+        'https://example.com/collections/duplicated-item',
+        req.originalUrl,
+        StatusCodes.NOT_FOUND,
+      ));
   }
 
   const product = await Product.findByIdAndUpdate(id, data);
 
-  res.status(200).json(product);
-  return 0;
+  if (product != null) {
+    return res
+      .status(StatusCodes.OK)
+      .json(product);
+  }
+
+  const msg = `There is no product with ID ${id}`;
+  winstonLogger.warn(msg);
+  return res
+    .status(StatusCodes.BAD_REQUEST)
+    .set('Content-Type', 'application/problem+json')
+    .json(ProblemDetails.create(
+      'Some parameters are invalid.',
+      msg,
+      'https://example.com/collections/id-not-found',
+      req.originalUrl,
+      StatusCodes.BAD_REQUEST,
+    ));
 };
 
+/**
+ * Create new product
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const postProducts = async (req, res = response) => {
   const {
     name, price, description, available, categoryId,
@@ -59,7 +147,18 @@ const postProducts = async (req, res = response) => {
   const productsExists = await Product.findOne({ name });
 
   if (productsExists) {
-    return res.status(400).json(`The product ${name} already exists`);
+    const msg = `The product ${name} already exists`;
+    winstonLogger.warn(msg);
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .set('Content-Type', 'application/problem+json')
+      .json(ProblemDetails.create(
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/duplicated-item',
+        req.originalUrl,
+        StatusCodes.BAD_REQUEST,
+      ));
   }
 
   // data to save
@@ -75,15 +174,30 @@ const postProducts = async (req, res = response) => {
   const product = new Product(data);
 
   // save to DB
-  await product.save();
-
-  res.status(201).json({
-    product,
-  });
-
-  return 0;
+  return product.save()
+    .then((prod) => res
+      .status(StatusCodes.CREATED)
+      .json({ prod }))
+    .catch((error) => {
+      winstonLogger.error(error.message);
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .set('Content-Type', 'application/problem+json')
+        .json(ProblemDetails.create(
+          'Something went wrong',
+          error.message,
+          'https://example.com/collections/internal-error',
+          req.originalUrl,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ));
+    });
 };
 
+/**
+ * Delete a product by ID
+ * @param {*} req
+ * @param {*} res
+ */
 const deleteProducts = async (req, res = response) => {
   const { id } = req.params;
 
@@ -92,15 +206,38 @@ const deleteProducts = async (req, res = response) => {
 
   const product = await Product.findByIdAndUpdate(id, { active: false });
 
-  res.json({
-    product,
-  });
+  if (product != null) {
+    return res.status(StatusCodes.OK)
+      .json({
+        product,
+      });
+  }
+
+  const msg = `There is no product with ID ${id}`;
+  winstonLogger.warning(msg);
+  return res
+    .status(StatusCodes.BAD_REQUEST)
+    .set('Content-Type', 'application/problem+json')
+    .json(ProblemDetails.create(
+      'Some parameters are invalid.',
+      msg,
+      'https://example.com/collections/id-not-found',
+      req.originalUrl,
+      StatusCodes.BAD_REQUEST,
+    ));
 };
 
+/**
+ * Patch products (NOT IMPLEMENTED)
+ * @param {*} req
+ * @param {*} res
+ */
 const patchProducts = (req, res = response) => {
-  res.json({
-    msg: 'patch API',
-  });
+  res
+    .status(StatusCodes.NOT_IMPLEMENTED)
+    .json({
+      msg: 'patch API',
+    });
 };
 
 module.exports = {

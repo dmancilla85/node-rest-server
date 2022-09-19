@@ -12,11 +12,15 @@ const { validarJWT, validarCampos } = require('../middlewares');
 
 const router = Router();
 
-router.get('/', getCategories);
+router.get('/', [validarJWT], getCategories);
 
 router.get(
   '/:id',
-  [check('id', 'Is not a valid ID').isMongoId().custom(categoryExists)],
+  [
+    validarJWT,
+    check('id', 'Is not a valid ID').isLength({ min: 12 }).isMongoId(),
+    validarCampos,
+  ],
   getCategoryById,
 );
 
