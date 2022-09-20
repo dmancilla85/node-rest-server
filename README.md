@@ -1,8 +1,10 @@
 ---
-title: "NODE REST Microservice Example"
-tags: ["nodejs","express", "mongodb", "apirest","swagger","openapi","problemdetails",
-"http2","prometheus-metrics","logging","jwt","authentication","authorization",
-"google-auth","roles","cloudinary","healthchecks"]
+title: "REST Microservice"
+author: "David A. Mancilla"
+tags: ["nodejs","express", "mongodb", "mongoose", "apirest","swagger","openapi",
+"problemdetails","http2","prometheus-metrics","logging","jwt","authentication",
+"authorization","google-auth","roles","cloudinary","healthchecks","environments",
+"cors"]
 ---
 
 # WebServer + RestServer #
@@ -14,18 +16,21 @@ Para definir el entorno de NODE
 $env:NODE_ENV = 'development'
 ```
 
+## BACKLOG
+- [ ] Middleware para ProblemDetails (?)
+- [ ] Completa validation model (60%) | revisar esto para todos los endpoints
+
 ## TODO
-- Agregar Métricas (50%) | falta agregar métricas personalizadas
-- Agregar HealthChecks para Mongo
-- Agregar CircuitBreaker/Retry
-- Completa validation model (60%) | revisar esto para todos los endpoints
-- Middleware para ProblemDetails (?)
+- [ ] Agregar Métricas (50%) | falta agregar métricas personalizadas
+- [ ] Agregar CircuitBreaker/Retry (25%) | requiere convertir en promesas las funciones de los controladores
 
 ## DONE
-- Agregar ProblemDetails
-- Agregar Swagger
-- Agregar Logging y persistir logs como archivos
-- Agregar HTTP/2. Falta que funcione Swagger con HTTP/2
-- Agregar autenticación por token
-- Reparar getImages
-- HealthChecks general
+- [x] HealthChecks para Mongo
+- [x] ProblemDetails
+- [x] Swagger
+- [x] Logging y persistir logs como archivos
+- [x] HTTP/2. Falta que funcione Swagger con HTTP/2
+- [x] Autenticación por token
+- [x] CORS
+- [x] Reparar getImages
+- [x] HealthChecks general

@@ -7,9 +7,15 @@ const fileUpload = require('express-fileupload');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
+const mongoose = require('mongoose');
 const { dbConnection } = require('../database/config');
 const { winstonLogger } = require('../helpers');
 const swaggerDocument = require('../swagger.json');
+
+const serverStatus = () => ({
+  state: 'up',
+  dbState: mongoose.STATES[mongoose.connection.readyState],
+});
 
 class Server {
   constructor() {
@@ -75,7 +81,9 @@ class Server {
     );
 
     // healthchecks
-    this.app.use('/api/health', healthcheck());
+    this.app.use('/api/health', healthcheck({
+      healthy: serverStatus,
+    }));
 
     // conectar a mongoDb
     Server.conectarDB();
@@ -121,27 +129,29 @@ class Server {
   }
 
   listen() {
-    const options = {
-      key: fs.readFileSync('./server.key'),
-      cert: fs.readFileSync('./server.crt'),
+    const http2Options = {
+      key: fs.readFileSync('./certs/server.key'),
+      cert: fs.readFileSync('./certs/server.crt'),
       spdy: {
         protocols: ['h2', 'http/1.1'],
       },
     };
 
-    winstonLogger.info(`Current environment is ${process.env.NODE_ENV}`);
+    winstonLogger.info(`The server process started with PID: ${process.pid}`);
+    winstonLogger.info(`Current environment is: ${process.env.NODE_ENV}`);
     winstonLogger.info(`Started logging with level: ${process.env.LOG_LEVEL}`);
 
     if (process.env.PROTOCOL === 'https') {
-      spdy.createServer(options, this.app).listen(this.port, () => {
+      spdy.createServer(http2Options, this.app)
+			.listen(this.port, () => {
         winstonLogger.info(
-          `Example app listening at https://localhost:${process.env.PORT}`,
+          `NODE Microservice app listening at https://localhost:${process.env.PORT}`,
         );
       });
     } else {
       this.app.listen(this.port, () => {
         winstonLogger.info(
-          `Example app listening at http://localhost:${process.env.PORT}`,
+          `NODE Microservice app listening at http://localhost:${process.env.PORT}`,
         );
 
         winstonLogger.info(`Check the OpenApi especification at http://localhost:${process.env.PORT}/api/docs`);

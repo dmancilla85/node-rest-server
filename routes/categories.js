@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
+
 const {
   postCategories,
   putCategories,
@@ -7,12 +8,16 @@ const {
   getCategories,
   getCategoryById,
 } = require('../controllers');
-const { categoryExists } = require('../helpers/db-validators');
+const { categoryExists } = require('../helpers');
 const { validarJWT, validarCampos } = require('../middlewares');
 
 const router = Router();
 
-router.get('/', [validarJWT], getCategories);
+router.get(
+  '/',
+  [validarJWT],
+  getCategories,
+);
 
 router.get(
   '/:id',

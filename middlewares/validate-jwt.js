@@ -1,7 +1,6 @@
 const { StatusCodes } = require('http-status-codes');
 const jwt = require('jsonwebtoken');
-const { winstonLogger } = require('../helpers');
-const ProblemDetails = require('../helpers/problem-details');
+const { winstonLogger, ProblemDetails } = require('../helpers');
 const { User } = require('../models');
 
 const validarJWT = async (req, res, next) => {

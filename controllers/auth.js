@@ -3,8 +3,7 @@ const bcryptjs = require('bcryptjs');
 const { StatusCodes } = require('http-status-codes');
 const { generateJWT, googleVerify } = require('../helpers');
 const { User } = require('../models');
-const { winstonLogger } = require('../helpers');
-const ProblemDetails = require('../helpers/problem-details');
+const { winstonLogger, ProblemDetails } = require('../helpers');
 
 /**
  * Login user

@@ -1,8 +1,7 @@
 const { response } = require('express');
 const { StatusCodes } = require('http-status-codes');
 const { ObjectId } = require('mongoose').Types;
-const { winstonLogger } = require('../helpers');
-const ProblemDetails = require('../helpers/problem-details');
+const { winstonLogger, ProblemDetails } = require('../helpers');
 const { User, Product, Category } = require('../models');
 
 const collectionsAllowed = ['users', 'categories', 'products', 'roles'];

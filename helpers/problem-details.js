@@ -19,4 +19,4 @@ class ProblemDetails {
   }
 }
 
-module.exports = ProblemDetails;
+module.exports = { ProblemDetails };

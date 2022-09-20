@@ -6,10 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
 const { StatusCodes } = require('http-status-codes');
-const { uploadFile } = require('../helpers');
 const { User, Product } = require('../models');
-const { winstonLogger } = require('../helpers');
-const ProblemDetails = require('../helpers/problem-details');
+const { winstonLogger, ProblemDetails, uploadFile } = require('../helpers');
 
 cloudinary.config(process.env.CLOUDINARY_URL);
 

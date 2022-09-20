@@ -4,7 +4,7 @@ const {
   isRoleValid,
   emailExists,
   userIdExists,
-} = require('../helpers/db-validators');
+} = require('../helpers');
 const {
   getUsers,
   getUserById,

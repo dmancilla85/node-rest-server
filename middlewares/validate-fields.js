@@ -1,7 +1,6 @@
 const { validationResult } = require('express-validator');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger } = require('../helpers');
-const ProblemDetails = require('../helpers/problem-details');
+const { winstonLogger, ProblemDetails } = require('../helpers');
 
 const validarCampos = (req, res, next) => {
   const errors = validationResult(req);

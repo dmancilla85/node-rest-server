@@ -1,6 +1,6 @@
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const winstonLogger = require('./winston-logger');
+const { winstonLogger } = require('./winston-logger');
 
 const uploadFile = (
   files,

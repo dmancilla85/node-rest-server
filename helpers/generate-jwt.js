@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
-const winstonLogger = require('./winston-logger');
+const { winstonLogger } = require('./winston-logger');
 
 const generateJWT = async (uid = '') => new Promise((resolve, reject) => {
   const payload = { uid };
+
   jwt.sign(
     payload,
     process.env.SECRET_KEY,
