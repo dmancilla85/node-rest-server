@@ -4,7 +4,7 @@ author: "David A. Mancilla"
 tags: ["nodejs","express", "mongodb", "mongoose", "apirest","swagger","openapi",
 "problemdetails","http2","prometheus-metrics","logging","jwt","authentication",
 "authorization","google-auth","roles","cloudinary","healthchecks","environments",
-"cors"]
+"cors","docker"]
 ---
 
 # WebServer + RestServer #
@@ -34,3 +34,4 @@ $env:NODE_ENV = 'development'
 - [x] CORS
 - [x] Reparar getImages
 - [x] HealthChecks general
+- [x] Docker container
