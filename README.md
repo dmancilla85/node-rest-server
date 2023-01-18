@@ -9,7 +9,7 @@ tags: ["nodejs","express", "mongodb", "mongoose", "apirest","swagger","openapi",
 
 # WebServer + RestServer #
 
-Recuerden que deben ejecutar `npm install` para reconstruir los módulos de node
+[![Build Status](https://dev.azure.com/dmancilla/Node.js%20API%20REST/_apis/build/status/dmancilla85.node-rest-server?branchName=master)](https://dev.azure.com/dmancilla/Node.js%20API%20REST/_build/latest?definitionId=5&branchName=master)
 
 Para definir el entorno de NODE
 ```
