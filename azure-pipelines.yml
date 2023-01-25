@@ -23,3 +23,8 @@ jobs:
         npm install
         npm run test
       displayName: 'npm install and test'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'node-rest-server'
+        publishLocation: 'Container'
