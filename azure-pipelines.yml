@@ -23,9 +23,13 @@ jobs:
         npm install
         npm run test
       displayName: 'npm install and test'
+
   - job: publish
     displayName: Publish artifact
     steps:
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
