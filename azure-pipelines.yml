@@ -11,7 +11,7 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
-  - job: node-install
+  - job: node
     displayName: Restore and run tests with npm
     steps:
     - task: NodeTool@0
@@ -26,7 +26,7 @@ jobs:
 
   - job: publish
     displayName: Publish artifact
-    dependsOn: node-install
+    dependsOn: node
     steps:
     - task: CopyFiles@2
       inputs:
