@@ -19,6 +19,11 @@ jobs:
         versionSpec: '16.x'
       displayName: 'Install Node.js'
 
+    - task: WhiteSource@21
+      inputs:
+        cwd: '$(System.DefaultWorkingDirectory)'
+        projectName: 'node-rest-server'
+
     - script: |
         npm install
         npm run test
