@@ -8,6 +8,8 @@ const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
+
 const { dbConnection } = require('../database/config');
 const { winstonLogger } = require('../helpers');
 const swaggerDocument = require('../swagger.json');
@@ -15,6 +17,13 @@ const swaggerDocument = require('../swagger.json');
 const serverStatus = () => ({
   state: 'up',
   dbState: mongoose.STATES[mongoose.connection.readyState],
+});
+
+const limiter = rateLimit({
+  windowMs: process.env.WINDOW_MINUTES * 60 * 1000, // duration in X minutes
+  max: process.env.WINDOW_MAX_REQUESTS, // Limit each IP to Z requests per `window` (per X minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
 class Server {
@@ -81,9 +90,12 @@ class Server {
     );
 
     // healthchecks
-    this.app.use('/api/health', healthcheck({
-      healthy: serverStatus,
-    }));
+    this.app.use(
+      '/api/health',
+      healthcheck({
+        healthy: serverStatus,
+      }),
+    );
 
     // conectar a mongoDb
     Server.conectarDB();
@@ -117,6 +129,9 @@ class Server {
         createParentPath: true,
       }),
     );
+
+    // Apply the rate limiting middleware to all requests
+    this.app.use(limiter);
   }
 
   routes() {
@@ -129,21 +144,20 @@ class Server {
   }
 
   listen() {
-    const http2Options = {
-      key: fs.readFileSync('./certs/server.key'),
-      cert: fs.readFileSync('./certs/server.crt'),
-      spdy: {
-        protocols: ['h2', 'http/1.1'],
-      },
-    };
-
     winstonLogger.info(`The server process started with PID: ${process.pid}`);
     winstonLogger.info(`Current environment is: ${process.env.NODE_ENV}`);
     winstonLogger.info(`Started logging with level: ${process.env.LOG_LEVEL}`);
 
     if (process.env.PROTOCOL === 'https') {
-      spdy.createServer(http2Options, this.app)
-			.listen(this.port, () => {
+      const http2Options = {
+        key: fs.readFileSync(process.env.HTTPS_KEY_FILE),
+        cert: fs.readFileSync(process.env.HTTPS_CERT_FILE),
+        spdy: {
+          protocols: ['h2', 'http/1.1'],
+        },
+      };
+
+      spdy.createServer(http2Options, this.app).listen(this.port, () => {
         winstonLogger.info(
           `NODE Microservice app listening at https://localhost:${process.env.PORT}`,
         );
@@ -154,7 +168,9 @@ class Server {
           `NODE Microservice app listening at http://localhost:${process.env.PORT}`,
         );
 
-        winstonLogger.info(`Check the OpenApi especification at http://localhost:${process.env.PORT}/api/docs`);
+        winstonLogger.info(
+          `Check the OpenApi especification at http://localhost:${process.env.PORT}/api/docs`,
+        );
       });
     }
   }

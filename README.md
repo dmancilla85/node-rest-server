@@ -35,3 +35,4 @@ $env:NODE_ENV = 'development'
 - [x] Reparar getImages
 - [x] HealthChecks general
 - [x] Docker container
+- [x] Rate Limiter

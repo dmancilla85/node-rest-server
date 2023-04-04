@@ -26,20 +26,21 @@ const getUsers = async (req = request, res = response) => {
     return res
       .status(StatusCodes.NOT_FOUND)
       .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Empty collection',
-        msg,
-        'https://example.com/collections/empty',
-        req.originalUrl,
-        StatusCodes.NOT_FOUND,
-      ));
+      .json(
+        ProblemDetails.create(
+          'Empty collection',
+          msg,
+          'https://example.com/collections/empty',
+          req.originalUrl,
+          StatusCodes.NOT_FOUND,
+        ),
+      );
   }
 
-  return res.status(StatusCodes.OK)
-    .json({
-      count,
-      users,
-    });
+  return res.status(StatusCodes.OK).json({
+    count,
+    users,
+  });
 };
 
 /**
@@ -61,18 +62,18 @@ const getUserById = async (req = request, res = response) => {
     return res
       .status(StatusCodes.NOT_FOUND)
       .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Item not found',
-        msg,
-        'https://example.com/collections/id-not-found',
-        req.originalUrl,
-        StatusCodes.NOT_FOUND,
-      ));
+      .json(
+        ProblemDetails.create(
+          'Item not found',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl,
+          StatusCodes.NOT_FOUND,
+        ),
+      );
   }
 
-  return res
-    .status(StatusCodes.OK)
-    .json(user);
+  return res.status(StatusCodes.OK).json(user);
 };
 
 /**
@@ -94,13 +95,15 @@ const putUsers = async (req, res = response) => {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Some parameters are invalid.',
-        msg,
-        'https://example.com/collections/id-not-found',
-        req.originalUrl,
-        StatusCodes.BAD_REQUEST,
-      ));
+      .json(
+        ProblemDetails.create(
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl,
+          StatusCodes.BAD_REQUEST,
+        ),
+      );
   }
 
   if (password) {
@@ -111,9 +114,7 @@ const putUsers = async (req, res = response) => {
 
   winstonLogger.info(`User with ID ${id} was updated.`);
 
-  res
-    .status(StatusCodes.OK)
-    .json(user);
+  res.status(StatusCodes.OK).json(user);
 };
 
 /**
@@ -127,7 +128,10 @@ const postUsers = async (req, res = response) => {
   } = req.body;
 
   const user = new User({
-    name, email, password, role,
+    name,
+    email,
+    password,
+    role,
   });
 
   // encrypt the password
@@ -135,22 +139,23 @@ const postUsers = async (req, res = response) => {
   user.password = crypt.hashSync(password, salt);
 
   // save to DB
-  return user.save()
-    .then((usr) => res
-      .status(StatusCodes.CREATED)
-      .json({ usr }))
+  return user
+    .save()
+    .then((usr) => res.status(StatusCodes.CREATED).json({ usr }))
     .catch((error) => {
       winstonLogger.error(error.message);
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .set('Content-Type', 'application/problem+json')
-        .json(ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR,
-        ));
+        .json(
+          ProblemDetails.create(
+            'Something went wrong',
+            error.message,
+            'https://example.com/collections/internal-error',
+            req.originalUrl,
+            StatusCodes.INTERNAL_SERVER_ERROR,
+          ),
+        );
     });
 };
 
@@ -173,20 +178,20 @@ const deleteUsers = async (req, res = response) => {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Some parameters are invalid.',
-        msg,
-        'https://example.com/collections/id-not-found',
-        req.originalUrl,
-        StatusCodes.BAD_REQUEST,
-      ));
+      .json(
+        ProblemDetails.create(
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl,
+          StatusCodes.BAD_REQUEST,
+        ),
+      );
   }
 
-  return res
-    .status(StatusCodes.OK)
-    .json({
-      user,
-    });
+  return res.status(StatusCodes.OK).json({
+    user,
+  });
 };
 
 /**
@@ -195,11 +200,9 @@ const deleteUsers = async (req, res = response) => {
  * @param {*} res
  */
 const patchUsers = (req, res = response) => {
-  res
-    .status(StatusCodes.NOT_IMPLEMENTED)
-    .json({
-      msg: 'patch API not implemented',
-    });
+  res.status(StatusCodes.NOT_IMPLEMENTED).json({
+    msg: 'patch API not implemented',
+  });
 };
 
 module.exports = {

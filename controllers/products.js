@@ -12,7 +12,7 @@ const { Product } = require('../models');
 const getProducts = async (req = request, res = response) => {
   const { limit = 5, from = 0 } = req.query;
 
-  const query = { state: true };
+  const query = { active: true };
 
   const [count, products] = await Promise.all([
     Product.countDocuments(query),
