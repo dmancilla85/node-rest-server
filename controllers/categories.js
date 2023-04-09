@@ -1,6 +1,6 @@
 const { response, request } = require('express');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 const { Category } = require('../models');
 
 /**

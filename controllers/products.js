@@ -1,6 +1,6 @@
 const { response, request } = require('express');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 const { Product } = require('../models');
 
 /**
@@ -9,41 +9,46 @@ const { Product } = require('../models');
  * @param {*} res
  * @returns
  */
-const getProducts = async (req = request, res = response) => {
-  const { limit = 5, from = 0 } = req.query;
+const getProducts = async (req = request, res = response, next) => {
+  try {
+    const { limit = 5, from = 0 } = req.query;
 
-  const query = { active: true };
+    const query = { active: true };
 
-  const [count, products] = await Promise.all([
-    Product.countDocuments(query),
-    Product.find(query)
-      .populate('userId', 'name')
-      .populate('categoryId', 'name')
-      .skip(Number(from))
-      .limit(Number(limit)),
-  ]);
+    const [count, products] = await Promise.all([
+      Product.countDocuments(query),
+      Product.find(query)
+        .populate('userId', 'name')
+        .populate('categoryId', 'name')
+        .skip(Number(from))
+        .limit(Number(limit)),
+    ]);
 
-  if (count === 0) {
-    const msg = 'There is no products';
-    winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Empty collection',
-        msg,
-        'https://example.com/collections/empty',
-        req.originalUrl,
-        StatusCodes.NOT_FOUND,
-      ));
-  }
+    if (count === 0) {
+      const msg = 'There is no products';
+      winstonLogger.warn(msg);
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .set('Content-Type', 'application/problem+json')
+        .json(
+          ProblemDetails.create(
+            'Empty collection',
+            msg,
+            'https://example.com/collections/empty',
+            req.originalUrl,
+            StatusCodes.NOT_FOUND,
+          ),
+        );
+    }
 
-  return res
-    .status(StatusCodes.OK)
-    .json({
+    return res.status(StatusCodes.OK).json({
       count,
       products,
     });
+  } catch (error) {
+    next(error);
+    return undefined;
+  }
 };
 
 /**
@@ -52,30 +57,36 @@ const getProducts = async (req = request, res = response) => {
  * @param {*} res
  * @returns
  */
-const getProductById = async (req = request, res = response) => {
-  const { id } = req.params;
+const getProductById = async (req = request, res = response, next) => {
+  try {
+    const { id } = req.params;
 
-  const product = await Product.findById(id)
-    .populate('userId', 'name')
-    .populate('categoryId', 'name');
+    const product = await Product.findById(id)
+      .populate('userId', 'name')
+      .populate('categoryId', 'name');
 
-  if (product === null) {
-    const msg = `Product with ID ${id} doesn't exist`;
-    winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Item not found',
-        msg,
-        'https://example.com/collections/id-not-found',
-        req.originalUrl,
-        StatusCodes.NOT_FOUND,
-      ));
+    if (product === null) {
+      const msg = `Product with ID ${id} doesn't exist`;
+      winstonLogger.warn(msg);
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .set('Content-Type', 'application/problem+json')
+        .json(
+          ProblemDetails.create(
+            'Item not found',
+            msg,
+            'https://example.com/collections/id-not-found',
+            req.originalUrl,
+            StatusCodes.NOT_FOUND,
+          ),
+        );
+    }
+
+    return res.status(StatusCodes.OK).json(product);
+  } catch (error) {
+    next(error);
+    return undefined;
   }
-
-  return res.status(StatusCodes.OK)
-    .json(product);
 };
 
 /**
@@ -101,21 +112,21 @@ const putProducts = async (req, res = response) => {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Possible duplicated item',
-        msg,
-        'https://example.com/collections/duplicated-item',
-        req.originalUrl,
-        StatusCodes.NOT_FOUND,
-      ));
+      .json(
+        ProblemDetails.create(
+          'Possible duplicated item',
+          msg,
+          'https://example.com/collections/duplicated-item',
+          req.originalUrl,
+          StatusCodes.NOT_FOUND,
+        ),
+      );
   }
 
   const product = await Product.findByIdAndUpdate(id, data);
 
   if (product != null) {
-    return res
-      .status(StatusCodes.OK)
-      .json(product);
+    return res.status(StatusCodes.OK).json(product);
   }
 
   const msg = `There is no product with ID ${id}`;
@@ -123,13 +134,15 @@ const putProducts = async (req, res = response) => {
   return res
     .status(StatusCodes.BAD_REQUEST)
     .set('Content-Type', 'application/problem+json')
-    .json(ProblemDetails.create(
-      'Some parameters are invalid.',
-      msg,
-      'https://example.com/collections/id-not-found',
-      req.originalUrl,
-      StatusCodes.BAD_REQUEST,
-    ));
+    .json(
+      ProblemDetails.create(
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/id-not-found',
+        req.originalUrl,
+        StatusCodes.BAD_REQUEST,
+      ),
+    );
 };
 
 /**
@@ -151,13 +164,15 @@ const postProducts = async (req, res = response) => {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .set('Content-Type', 'application/problem+json')
-      .json(ProblemDetails.create(
-        'Some parameters are invalid.',
-        msg,
-        'https://example.com/collections/duplicated-item',
-        req.originalUrl,
-        StatusCodes.BAD_REQUEST,
-      ));
+      .json(
+        ProblemDetails.create(
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/duplicated-item',
+          req.originalUrl,
+          StatusCodes.BAD_REQUEST,
+        ),
+      );
   }
 
   // data to save
@@ -173,22 +188,23 @@ const postProducts = async (req, res = response) => {
   const product = new Product(data);
 
   // save to DB
-  return product.save()
-    .then((prod) => res
-      .status(StatusCodes.CREATED)
-      .json({ prod }))
+  return product
+    .save()
+    .then((prod) => res.status(StatusCodes.CREATED).json({ prod }))
     .catch((error) => {
       winstonLogger.error(error.message);
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .set('Content-Type', 'application/problem+json')
-        .json(ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR,
-        ));
+        .json(
+          ProblemDetails.create(
+            'Something went wrong',
+            error.message,
+            'https://example.com/collections/internal-error',
+            req.originalUrl,
+            StatusCodes.INTERNAL_SERVER_ERROR,
+          ),
+        );
     });
 };
 
@@ -206,10 +222,9 @@ const deleteProducts = async (req, res = response) => {
   const product = await Product.findByIdAndUpdate(id, { active: false });
 
   if (product != null) {
-    return res.status(StatusCodes.OK)
-      .json({
-        product,
-      });
+    return res.status(StatusCodes.OK).json({
+      product,
+    });
   }
 
   const msg = `There is no product with ID ${id}`;
@@ -217,13 +232,15 @@ const deleteProducts = async (req, res = response) => {
   return res
     .status(StatusCodes.BAD_REQUEST)
     .set('Content-Type', 'application/problem+json')
-    .json(ProblemDetails.create(
-      'Some parameters are invalid.',
-      msg,
-      'https://example.com/collections/id-not-found',
-      req.originalUrl,
-      StatusCodes.BAD_REQUEST,
-    ));
+    .json(
+      ProblemDetails.create(
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/id-not-found',
+        req.originalUrl,
+        StatusCodes.BAD_REQUEST,
+      ),
+    );
 };
 
 /**
@@ -232,11 +249,9 @@ const deleteProducts = async (req, res = response) => {
  * @param {*} res
  */
 const patchProducts = (req, res = response) => {
-  res
-    .status(StatusCodes.NOT_IMPLEMENTED)
-    .json({
-      msg: 'patch API',
-    });
+  res.status(StatusCodes.NOT_IMPLEMENTED).json({
+    msg: 'patch API',
+  });
 };
 
 module.exports = {

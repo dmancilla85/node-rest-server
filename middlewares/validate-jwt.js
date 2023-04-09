@@ -1,9 +1,9 @@
 const { StatusCodes } = require('http-status-codes');
 const jwt = require('jsonwebtoken');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 const { User } = require('../models');
 
-const validarJWT = async (req, res, next) => {
+const validateJWT = async (req, res, next) => {
   const token = req.header('x-token');
 
   if (!token) {
@@ -77,4 +77,4 @@ const validarJWT = async (req, res, next) => {
   return 0;
 };
 
-module.exports = { validarJWT };
+module.exports = { validateJWT };

@@ -1,6 +1,6 @@
 const { response } = require('express');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 
 const validateFile = (req, next, res = response) => {
   if (!req.files || Object.keys(req.files).length === 0) {

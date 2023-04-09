@@ -4,7 +4,7 @@ const {
   isRoleValid,
   emailExists,
   userIdExists,
-} = require('../helpers');
+} = require('../utils');
 const {
   getUsers,
   getUserById,
@@ -13,7 +13,7 @@ const {
   deleteUsers,
   patchUsers,
 } = require('../controllers');
-const { validarCampos, validarJWT, hasRoles } = require('../middlewares');
+const { validateFields, validateJWT, hasRoles } = require('../middlewares');
 
 const router = Router();
 
@@ -23,7 +23,7 @@ router.get(
   '/:id',
   [
     check('id', 'Is not a valid ID').isMongoId(),
-    validarCampos,
+    validateFields,
   ],
   getUserById,
 );
@@ -31,7 +31,7 @@ router.get(
 router.post(
   '',
   [
-    validarJWT,
+    validateJWT,
     check('name', 'Name is required').not().isEmpty(),
     check(
       'password',
@@ -39,7 +39,7 @@ router.post(
     ).isLength({ min: 6 }),
     check('email').isEmail().normalizeEmail().custom(emailExists),
     check('role').custom(isRoleValid),
-    validarCampos,
+    validateFields,
   ],
   postUsers,
 );
@@ -49,10 +49,10 @@ router.patch('', patchUsers);
 router.put(
   '/:id',
   [
-    validarJWT,
+    validateJWT,
     check('id', 'Is not a valid ID').isMongoId().custom(userIdExists),
     check('role').custom(isRoleValid),
-    validarCampos,
+    validateFields,
   ],
   putUsers,
 );
@@ -60,10 +60,10 @@ router.put(
 router.delete(
   '/:id',
   [
-    validarJWT,
+    validateJWT,
     hasRoles('ADMIN_ROLE', 'VENTAS_ROLE'),
     check('id', 'Is not a valid ID').isMongoId().custom(userIdExists),
-    validarCampos,
+    validateFields,
   ],
   deleteUsers,
 );

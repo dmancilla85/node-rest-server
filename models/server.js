@@ -1,18 +1,18 @@
 const express = require('express');
 const spdy = require('spdy');
 const cors = require('cors');
-const promMid = require('express-prometheus-middleware');
 const healthcheck = require('express-healthcheck');
-const fileUpload = require('express-fileupload');
+const apiMetrics = require('prometheus-api-metrics');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 
-const { dbConnection } = require('../database/config');
-const { winstonLogger } = require('../helpers');
+const { dbConnection } = require('../configs/mongodb');
+const { winstonLogger } = require('../utils');
 const swaggerDocument = require('../swagger.json');
+const { errorHandler } = require('../middlewares/error-handler');
 
 const serverStatus = () => ({
   state: 'up',
@@ -36,7 +36,11 @@ class Server {
       categories: '/api/categories',
       products: '/api/products',
       search: '/api/search',
+      uploadsToMongo: '/api/uploads/mongo',
       uploads: '/api/uploads',
+      health: '/api/health',
+      swagger: '/api/docs',
+      metrics: '/api/metrics',
     };
 
     // loggers settings
@@ -72,26 +76,26 @@ class Server {
 
     // swagger configuration
     this.app.use(
-      '/api/docs',
+      this.paths.swagger,
       swaggerUi.serve,
       swaggerUi.setup(swaggerDocument),
     );
 
     // metrics configuration
     this.app.use(
-      promMid({
-        metricsPath: '/api/metrics',
+      apiMetrics({
+        metricsPath: this.paths.metrics,
         collectDefaultMetrics: true,
-        requestDurationBuckets: [0.1, 0.5, 1, 1.5],
-        requestLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
-        responseLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
-        prefix: 'node_rest_',
+        durationBuckets: [0.1, 0.5, 1, 1.5],
+        requestSizeBuckets: [512, 1024, 5120, 10240, 51200, 102400],
+        responseSizeBuckets: [512, 1024, 5120, 10240, 51200, 102400],
+        metrics_prefix: 'node_rest_',
       }),
     );
 
     // healthchecks
     this.app.use(
-      '/api/health',
+      this.paths.health,
       healthcheck({
         healthy: serverStatus,
       }),
@@ -105,6 +109,9 @@ class Server {
 
     // rutas
     this.routes();
+
+    // error-handling middleware
+    this.app.use(errorHandler);
   }
 
   static async conectarDB() {
@@ -121,15 +128,6 @@ class Server {
     // directorio público
     this.app.use(express.static('public'));
 
-    // uploads
-    this.app.use(
-      fileUpload({
-        useTempFiles: true,
-        tempFileDir: '/tmp/',
-        createParentPath: true,
-      }),
-    );
-
     // Apply the rate limiting middleware to all requests
     this.app.use(limiter);
   }
@@ -140,6 +138,10 @@ class Server {
     this.app.use(this.paths.categories, require('../routes/categories'));
     this.app.use(this.paths.products, require('../routes/products'));
     this.app.use(this.paths.search, require('../routes/search'));
+    this.app.use(
+      this.paths.uploadsToMongo,
+      require('../routes/uploads-to-mongo'),
+    );
     this.app.use(this.paths.uploads, require('../routes/uploads'));
   }
 

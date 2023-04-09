@@ -1,11 +1,13 @@
-const validaCampos = require('./validate-fields');
-const validarJWT = require('./validate-jwt');
-const validarArchivo = require('./validate-file');
-const validaRoles = require('./validate-roles');
+const validateFields = require('./validate-fields');
+const validateJWT = require('./validate-jwt');
+const validateFile = require('./validate-file');
+const validateRoles = require('./validate-roles');
+const diskStorage = require('./disk-storage');
 
 module.exports = {
-  ...validaCampos,
-  ...validarJWT,
-  ...validaRoles,
-  ...validarArchivo,
+  ...validateFields,
+  ...validateJWT,
+  ...validateRoles,
+  ...validateFile,
+  ...diskStorage,
 };

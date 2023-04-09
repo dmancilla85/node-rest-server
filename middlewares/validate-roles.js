@@ -1,7 +1,7 @@
 const { response } = require('express');
 
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 
 const isAdminRole = (req, next, res = response) => {
   if (!req.authUser) {

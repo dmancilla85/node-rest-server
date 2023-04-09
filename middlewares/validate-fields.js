@@ -1,8 +1,8 @@
 const { validationResult } = require('express-validator');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 
-const validarCampos = (req, res, next) => {
+const validateFields = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -22,4 +22,4 @@ const validarCampos = (req, res, next) => {
   return next();
 };
 
-module.exports = { validarCampos };
+module.exports = { validateFields };

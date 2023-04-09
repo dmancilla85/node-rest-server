@@ -8,23 +8,23 @@ const {
   getCategories,
   getCategoryById,
 } = require('../controllers');
-const { categoryExists } = require('../helpers');
-const { validarJWT, validarCampos } = require('../middlewares');
+const { categoryExists } = require('../utils');
+const { validateJWT, validateFields } = require('../middlewares');
 
 const router = Router();
 
 router.get(
   '/',
-  [validarJWT],
+  [validateJWT],
   getCategories,
 );
 
 router.get(
   '/:id',
   [
-    validarJWT,
+    validateJWT,
     check('id', 'Is not a valid ID').isLength({ min: 12 }).isMongoId(),
-    validarCampos,
+    validateFields,
   ],
   getCategoryById,
 );
@@ -32,9 +32,9 @@ router.get(
 router.post(
   '/',
   [
-    validarJWT,
+    validateJWT,
     check('name', 'Category name is required').not().isEmpty(),
-    validarCampos,
+    validateFields,
   ],
   postCategories,
 );
@@ -42,10 +42,10 @@ router.post(
 router.put(
   '/:id',
   [
-    validarJWT,
+    validateJWT,
     check('id', 'Is not a valid ID').isMongoId().custom(categoryExists),
     check('name', 'Category name is required').not().isEmpty(),
-    validarCampos,
+    validateFields,
   ],
   putCategories,
 );
@@ -53,9 +53,9 @@ router.put(
 router.delete(
   '/:id',
   [
-    validarJWT,
+    validateJWT,
     check('id', 'Is not a valid ID').isMongoId().custom(categoryExists),
-    validarCampos,
+    validateFields,
   ],
   deleteCategories,
 );

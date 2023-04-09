@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { winstonLogger } = require('../helpers');
+const { winstonLogger } = require('../utils');
 
 const dbConnection = async () => {
   try {

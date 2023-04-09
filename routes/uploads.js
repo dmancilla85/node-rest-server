@@ -5,9 +5,9 @@ const {
   getImage,
   updateImageCloudinary,
   updateLocalImage,
-} = require('../controllers/uploads');
-const { collectionsAllowed } = require('../helpers');
-const { validarCampos, validateFile } = require('../middlewares');
+} = require('../controllers');
+const { collectionsAllowed } = require('../utils');
+const { validateFields, validateFile, diskStorage } = require('../middlewares');
 
 const router = Router();
 
@@ -16,12 +16,12 @@ router.get(
   [
     check('id').isMongoId(),
     check('collection').custom((c) => collectionsAllowed(c, ['users', 'products'])),
-    validarCampos,
+    validateFields,
   ],
   getImage,
 );
 
-router.post('/', validateFile, uploadFiles);
+router.post('/', validateFile, diskStorage, uploadFiles);
 
 router.put(
   '/:collection/:id',
@@ -29,7 +29,7 @@ router.put(
     validateFile,
     check('id').isMongoId(),
     check('collection').custom((c) => collectionsAllowed(c, ['users', 'products'])),
-    validarCampos,
+    validateFields,
   ],
   updateLocalImage,
 );
@@ -40,7 +40,7 @@ router.put(
     validateFile,
     check('id').isMongoId(),
     check('collection').custom((c) => collectionsAllowed(c, ['users', 'products'])),
-    validarCampos,
+    validateFields,
   ],
   updateImageCloudinary,
 );

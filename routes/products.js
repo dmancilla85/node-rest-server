@@ -7,8 +7,8 @@ const {
   getProducts,
   getProductById,
 } = require('../controllers');
-const { productExists, categoryExists } = require('../helpers');
-const { validarJWT, validarCampos } = require('../middlewares');
+const { productExists, categoryExists } = require('../utils');
+const { validateJWT, validateFields } = require('../middlewares');
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.get(
   '/:id',
   [
     check('id', 'Is not a valid ID').isMongoId().custom(productExists),
-    validarCampos,
+    validateFields,
   ],
   getProductById,
 );
@@ -26,10 +26,10 @@ router.get(
 router.post(
   '/',
   [
-    validarJWT,
+    validateJWT,
     check('name', 'Product name is required').not().isEmpty(),
     check('categoryId', 'Is not a valid ID').isMongoId().custom(categoryExists),
-    validarCampos,
+    validateFields,
   ],
   postProducts,
 );
@@ -37,11 +37,11 @@ router.post(
 router.put(
   '/:id',
   [
-    validarJWT,
+    validateJWT,
     check('id', 'Is not a valid ID').isMongoId().custom(productExists),
     check('categoryId', 'Is not a valid ID').isMongoId().custom(categoryExists),
     check('name', 'Product name is required').not().isEmpty(),
-    validarCampos,
+    validateFields,
   ],
   putProducts,
 );
@@ -49,9 +49,9 @@ router.put(
 router.delete(
   '/:id',
   [
-    validarJWT,
+    validateJWT,
     check('id', 'Is not a valid ID').isMongoId().custom(productExists),
-    validarCampos,
+    validateFields,
   ],
   deleteProducts,
 );

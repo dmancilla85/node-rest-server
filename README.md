@@ -36,3 +36,4 @@ $env:NODE_ENV = 'development'
 - [x] HealthChecks general
 - [x] Docker container
 - [x] Rate Limiter
+- [x] Upload files to Mongo

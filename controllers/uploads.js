@@ -7,7 +7,7 @@ const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
 const { StatusCodes } = require('http-status-codes');
 const { User, Product } = require('../models');
-const { winstonLogger, ProblemDetails, uploadFile } = require('../helpers');
+const { winstonLogger, ProblemDetails, uploadFile } = require('../utils');
 
 cloudinary.config(process.env.CLOUDINARY_URL);
 
@@ -142,7 +142,7 @@ const updateLocalImage = async (req, res = response) => {
     if (model.img) {
       const imagePath = path.join(
         __dirname,
-        '../uploads/',
+        `..${process.env.UPLOADS_PATH}/`,
         collection,
         model.img,
       );
@@ -363,7 +363,7 @@ const getImage = async (req, res = response) => {
   try {
     if (model.img) {
       const filename = model.img.split('/').pop();
-      const filepath = `${appDir}/uploads/users/${filename}`;
+      const filepath = `${appDir}${process.env.UPLOADS_PATH}/users/${filename}`;
 
       if (isValidHttpUrl(model.img)) {
         await fetch(model.img)
@@ -387,7 +387,7 @@ const getImage = async (req, res = response) => {
       } else {
         const imagePath = path.join(
           __dirname,
-          `${appDir}/uploads/`,
+          `${appDir}${process.env.UPLOADS_PATH}/`,
           collection,
           model.img,
         );

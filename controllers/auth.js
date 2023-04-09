@@ -1,9 +1,9 @@
 const { response } = require('express');
 const bcryptjs = require('bcryptjs');
 const { StatusCodes } = require('http-status-codes');
-const { generateJWT, googleVerify } = require('../helpers');
+const { generateJWT, googleVerify } = require('../utils');
 const { User } = require('../models');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 
 /**
  * Login user

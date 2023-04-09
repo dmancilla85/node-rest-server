@@ -2,7 +2,7 @@ const { response, request } = require('express');
 const crypt = require('bcryptjs');
 const { StatusCodes } = require('http-status-codes');
 const { User } = require('../models');
-const { winstonLogger, ProblemDetails } = require('../helpers');
+const { winstonLogger, ProblemDetails } = require('../utils');
 
 /**
  * Get users collection
