@@ -6,7 +6,6 @@ name: 1.0$(Rev:.r)
 
 trigger:
 - master
-- develop
 
 pool:
   vmImage: ubuntu-latest
