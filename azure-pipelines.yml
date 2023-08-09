@@ -33,9 +33,13 @@ jobs:
     displayName: Publish artifact
     dependsOn: node
     steps:
-    - task: CopyFiles@2
+    # Archive files v2
+      # Compress files into .7z, .tar.gz, or .zip.
+    - task: ArchiveFiles@2
       inputs:
-        targetFolder: '$(Build.ArtifactStagingDirectory)'
+        rootFolderOrFile: "$(Build.Repository.LocalPath)"
+        archiveType: "zip"
+        archiveFile: "$(Build.ArtifactStagingDirectory)/drop.zip"
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
