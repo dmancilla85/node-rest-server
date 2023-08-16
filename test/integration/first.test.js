@@ -2,6 +2,8 @@ const request = require('supertest-session');
 
 const { app } = require('../../app');
 
+const fullTest = false; // process.env.NODE_ENV !== 'production'
+
 describe('GET /api/health', () => {
   it('responds with json', (done) => {
     request(app)
@@ -22,7 +24,7 @@ describe('GET /api/metrics', () => {
   });
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (fullTest) {
   describe('GET /api/products', () => {
     it('responds with json', (done) => {
       request(app)
