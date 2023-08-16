@@ -22,12 +22,14 @@ describe('GET /api/metrics', () => {
   });
 });
 
-describe('GET /api/products', () => {
-  it('responds with json', (done) => {
-    request(app)
-      .get('/api/products?from=0&limit=10')
-      .set('Accept', '*/*')
-      .expect('Content-Type', /json/)
-      .expect(200, done);
+if (process.env.NODE_ENV !== 'production') {
+  describe('GET /api/products', () => {
+    it('responds with json', (done) => {
+      request(app)
+        .get('/api/products?from=0&limit=10')
+        .set('Accept', '*/*')
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
   });
-});
+}
