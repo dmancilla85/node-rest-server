@@ -3,4 +3,5 @@ node_modules/
 /logs/**
 uploads/products/**.*
 uploads/users/**.*
-.env
+.env.development
+.env.production

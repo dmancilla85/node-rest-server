@@ -37,6 +37,20 @@ jobs:
     displayName: Publish artifact
     dependsOn: node
     steps:
+      - task: DownloadSecureFile@1
+        name: downloadEnvFile
+        displayName: 'Download .env file'
+        inputs:
+          secureFile: '.env.production'
+
+      - task: CopyFiles@2
+        name: copyEnvFile
+        displayName: 'Copy .env file to publish'
+        inputs:
+          SourceFolder: $(Agent.TempDirectory)
+          Contents: '**\.env.production'
+          TargetFolder: $(Build.Repository.LocalPath)
+
       # Compress files into .7z, .tar.gz, or .zip.
       - task: ArchiveFiles@2
         inputs:
