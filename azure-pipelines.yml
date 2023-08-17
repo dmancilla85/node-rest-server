@@ -51,6 +51,9 @@ jobs:
           Contents: '**\.env.production'
           TargetFolder: $(Build.Repository.LocalPath)
 
+      - script: npm install
+        displayName: 'Download node modules'
+
       # Compress files into .7z, .tar.gz, or .zip.
       - task: ArchiveFiles@2
         inputs:
