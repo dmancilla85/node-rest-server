@@ -5,3 +5,4 @@ uploads/products/**.*
 uploads/users/**.*
 .env.development
 .env.production
+.env
