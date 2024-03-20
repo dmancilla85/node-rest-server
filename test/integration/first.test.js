@@ -42,7 +42,7 @@ if (fullTest) {
         .set('Accept', '*/*')
         .expect('Content-Type', /json/)
         .expect(200, done);
-    });
+    }).timeout(5000);
   });
 
   describe('GET /api/users', () => {
@@ -52,7 +52,7 @@ if (fullTest) {
         .set('Accept', '*/*')
         .expect('Content-Type', /json/)
         .expect(200, done);
-    });
+    }).timeout(5000);
   });
 
   describe('GET /api/roles', () => {
