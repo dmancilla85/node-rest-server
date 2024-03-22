@@ -4,3 +4,5 @@ npm-debug.log
 /logs/**
 uploads/products/**.*
 uploads/users/**.*
+.env.development
+.env.production

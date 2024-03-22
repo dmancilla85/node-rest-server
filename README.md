@@ -17,7 +17,6 @@ $env:NODE_ENV = 'development'
 ```
 
 ## BACKLOG
-- [ ] Middleware para ProblemDetails (?)
 - [ ] Completa validation model (60%) | revisar esto para todos los endpoints
 
 ## TODO
@@ -36,3 +35,4 @@ $env:NODE_ENV = 'development'
 - [x] HealthChecks general
 - [x] Docker container
 - [x] Rate Limiter
+- [x] Upload files to Mongo

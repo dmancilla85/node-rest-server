@@ -19,15 +19,19 @@
   "servers": [
     {
       "url": "http://localhost:8080/api",
-			"description": "Local HTTP Server"
+      "description": "Local HTTP Server"
     },
     {
       "url": "https://localhost:8080/api",
-			"description": "Local HTTP/2 Server"
+      "description": "Local HTTP/2 Server"
     },
     {
       "url": "http://localhost:3000/api",
-			"description": "Docker Server"
+      "description": "Docker Server"
+    },
+    {
+      "url": "http://localhost:5002/api",
+      "description": "Windows 2019 Server"
     }
   ],
   "tags": [
@@ -91,7 +95,7 @@
           "200": {
             "description": "successful operation",
             "content": {
-              "application/json": {
+              "text/plain": {
                 "schema": {
                   "type": "string"
                 }
@@ -132,7 +136,7 @@
           "400": {
             "description": "Invalid user or password",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -206,7 +210,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -216,7 +220,7 @@
           "404": {
             "description": "No categories found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -260,7 +264,7 @@
           "400": {
             "description": "Invalid input",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -270,7 +274,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -317,7 +321,7 @@
           "400": {
             "description": "Invalid ID value",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -327,7 +331,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -371,7 +375,7 @@
           "400": {
             "description": "Invalid category ID supplied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -381,7 +385,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -391,7 +395,7 @@
           "404": {
             "description": "Category ID not found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -446,7 +450,7 @@
           "400": {
             "description": "Invalid MongoID supplied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -456,7 +460,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -466,7 +470,7 @@
           "404": {
             "description": "There is no category with that MongoID",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -504,7 +508,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -514,7 +518,7 @@
           "404": {
             "description": "No products found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -558,7 +562,7 @@
           "400": {
             "description": "Invalid input",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -568,7 +572,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -615,7 +619,7 @@
           "400": {
             "description": "Invalid ID value",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -625,7 +629,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -669,7 +673,7 @@
           "400": {
             "description": "Invalid product ID supplied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -679,7 +683,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -689,7 +693,7 @@
           "404": {
             "description": "Product ID not found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -744,7 +748,7 @@
           "400": {
             "description": "Invalid MongoID supplied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -754,7 +758,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -764,7 +768,7 @@
           "404": {
             "description": "There is no product with that MongoID",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -828,7 +832,7 @@
           "400": {
             "description": "Invalid term or collection",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -838,7 +842,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -848,7 +852,7 @@
           "501": {
             "description": "Collection not implemented",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -883,7 +887,7 @@
           "400": {
             "description": "Invalid file",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -893,7 +897,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -903,7 +907,7 @@
           "500": {
             "description": "Error uploading file",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -961,7 +965,7 @@
           "400": {
             "description": "Invalid ID or collection",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -971,7 +975,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -992,7 +996,7 @@
           "501": {
             "description": "Collection not implemented",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1002,7 +1006,7 @@
           "500": {
             "description": "Error getting file",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1061,7 +1065,7 @@
           "400": {
             "description": "Invalid ID or collection",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1071,7 +1075,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1081,7 +1085,7 @@
           "404": {
             "description": "ID not found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1091,7 +1095,7 @@
           "501": {
             "description": "Collection not implemented",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1101,7 +1105,7 @@
           "500": {
             "description": "Error updating file",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1167,7 +1171,7 @@
           "400": {
             "description": "Invalid ID or collection",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1177,7 +1181,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1187,7 +1191,7 @@
           "404": {
             "description": "ID not found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1197,7 +1201,7 @@
           "501": {
             "description": "Collection not implemented",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1207,7 +1211,7 @@
           "500": {
             "description": "Error updating file",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1245,7 +1249,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1255,7 +1259,7 @@
           "404": {
             "description": "No users found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1299,7 +1303,7 @@
           "400": {
             "description": "Invalid input",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1309,7 +1313,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1356,7 +1360,7 @@
           "400": {
             "description": "Invalid ID value",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1366,7 +1370,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1410,7 +1414,7 @@
           "400": {
             "description": "Invalid user ID supplied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1420,7 +1424,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1430,7 +1434,7 @@
           "404": {
             "description": "User ID not found",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1485,7 +1489,7 @@
           "400": {
             "description": "Invalid MongoID supplied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1495,7 +1499,7 @@
           "401": {
             "description": "Invalid token, user unauthorized.",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1505,7 +1509,7 @@
           "404": {
             "description": "There is no user with that MongoID",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1585,7 +1589,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "PASTRY ROLL"
+            "example": "PASTRIES"
           }
         }
       },
@@ -1604,7 +1608,7 @@
             "example": "62083fbdb5d9510f71cf6988"
           },
           "price": {
-            "type": "numeric",
+            "type": "number",
             "example": 10.0
           },
           "description": {
@@ -1654,12 +1658,20 @@
             "type": "string",
             "example": "PASTRY ROLL"
           },
+          "price": {
+            "type": "number",
+            "example": 10.0
+          },
           "category": {
             "$ref": "#/components/schemas/Category"
           },
-          "status": {
+          "active": {
             "type": "boolean",
             "description": "current status in the store"
+          },
+          "available": {
+            "type": "boolean",
+            "description": "exists in stock"
           }
         }
       },
@@ -1698,7 +1710,7 @@
             "type": "boolean",
             "description": "has Google authentication"
           },
-          "status": {
+          "active": {
             "type": "boolean",
             "description": "current status in the store"
           }
