@@ -48,12 +48,13 @@ class Server {
     const morganFormat =
       process.env.NODE_ENV !== 'production' ? 'dev' : 'combined';
     const rfs = require('rotating-file-stream');
-    const path = require('path');
+    const log_path = process.env.REQUESTS_LOGS_PATH;
+
     this.app.use(
       morgan(morganFormat, {
         stream: rfs.createStream('requests.log', {
           interval: '1d', // rotate daily
-          path: path.join(__dirname, '../logs/'),
+          path: `${log_path}/`,
         }),
       })
     );

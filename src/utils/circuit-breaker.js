@@ -1,9 +1,7 @@
 const MollitiaPrometheus = require('@mollitia/prometheus');
 const Mollitia = require('mollitia');
 
-const {
-  Circuit, Fallback, SlidingCountBreaker, BreakerState,
-} = Mollitia;
+const { Circuit, Fallback, SlidingCountBreaker, BreakerState } = Mollitia;
 
 Mollitia.use(new MollitiaPrometheus.PrometheusAddon());
 
@@ -33,17 +31,28 @@ const fallback = new Fallback({
   },
 });
 
-// Creates a circuit
-const circuitBreaker = new Circuit({
-  name: 'API Operations',
-  options: {
-    prometheus: {
-      name: 'circuit_breaker',
+/**
+ * Creates a circuit breaker
+ * Usage: await buildCircuitBreaker('Circuit Name', 'some_circuit')
+ *          .fn(yourFunction).execute('dummy');
+ * @param {*} circuitName
+ * @param {*} prometheusName
+ * @returns
+ */
+const buildCircuitBreaker = (circuitName, prometheusName = 'circuit_breaker') =>
+  new Circuit({
+    name: circuitName,
+    options: {
+      prometheus: {
+        name: prometheusName,
+      },
+      modules: [slidingCountBreaker, fallback],
     },
-    modules: [slidingCountBreaker, fallback],
-  },
-});
+  });
 
 module.exports = {
-  BreakerState, slidingCountBreaker, fallback, circuitBreaker,
+  BreakerState,
+  slidingCountBreaker,
+  fallback,
+  buildCircuitBreaker,
 };

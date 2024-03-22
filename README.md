@@ -17,7 +17,6 @@ $env:NODE_ENV = 'development'
 ```
 
 ## BACKLOG
-- [ ] Middleware para ProblemDetails (?)
 - [ ] Completa validation model (60%) | revisar esto para todos los endpoints
 
 ## TODO
