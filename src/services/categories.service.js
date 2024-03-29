@@ -26,6 +26,7 @@ class CategoriesService {
   }
 
   async getById(id) {
+    // throw new Error('oh pichula');
     return this.model.findById(id).populate('userId', 'name');
   }
 

@@ -39,7 +39,7 @@ if (process.env.NODE_ENV !== 'production') {
     transports: [
       new transports.DailyRotateFile({
         filename: `${log_path}/combined-%DATE%.log`,
-        level: 'debug',
+        level: log_level,
         datePattern: 'YYYYMMDD',
         maxSize: '10m',
         maxFiles: '14d',
@@ -48,6 +48,7 @@ if (process.env.NODE_ENV !== 'production') {
       }),
       new transports.Console({
         handleExceptions: true,
+        level: log_level,
       }),
     ],
   });
@@ -67,7 +68,7 @@ if (process.env.NODE_ENV !== 'production') {
       }),
       new transports.DailyRotateFile({
         filename: `${log_path}/combined-%DATE%.log`,
-        level: 'info',
+        level: log_level,
         datePattern: 'YYYYMMDD',
         maxSize: '10m',
         maxFiles: '14d',

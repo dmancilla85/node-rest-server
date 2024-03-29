@@ -16,7 +16,7 @@ const config = {
   openStateDelay: 10000,
   halfOpenStateMaxDelay: 30000,
 };
-// Sliding counter
+
 const slidingCountBreaker = new SlidingCountBreaker(config);
 
 // Create fallback
@@ -24,7 +24,7 @@ const fallback = new Fallback({
   callback(err) {
     // Every time the method rejects, You can filter here
     if (err) {
-      return err.message;
+      return err;
     }
 
     return 0;
@@ -39,7 +39,7 @@ const fallback = new Fallback({
  * @param {*} prometheusName
  * @returns
  */
-const buildCircuitBreaker = (circuitName, prometheusName = 'circuit_breaker') =>
+const buildCircuit = (circuitName, prometheusName = 'circuit_breaker') =>
   new Circuit({
     name: circuitName,
     options: {
@@ -52,7 +52,5 @@ const buildCircuitBreaker = (circuitName, prometheusName = 'circuit_breaker') =>
 
 module.exports = {
   BreakerState,
-  slidingCountBreaker,
-  fallback,
-  buildCircuitBreaker,
+  buildCircuit,
 };

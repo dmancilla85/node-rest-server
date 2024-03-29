@@ -2,6 +2,7 @@ const fs = require('fs');
 const express = require('express');
 const spdy = require('spdy');
 const cors = require('cors');
+const { register } = require('prom-client');
 const healthcheck = require('express-healthcheck');
 const apiMetrics = require('prometheus-api-metrics');
 const morgan = require('morgan');

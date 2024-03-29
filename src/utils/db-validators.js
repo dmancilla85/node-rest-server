@@ -1,8 +1,5 @@
 const { ObjectId } = require('mongoose').Types;
-const {
-  User, Role, Category, Product,
-} = require('../models');
-const winstonLogger = require('./winston-logger');
+const { User, Role, Category, Product } = require('../models');
 
 const isValidMongoId = (id) => {
   if (id.length > 12 && id.length >= 24) {
@@ -16,10 +13,7 @@ const collectionsAllowed = (collection = '', collections = []) => {
 
   if (!check) {
     const msg = `The ${collection} collection is not allowed: ${collections}`;
-    winstonLogger.error(msg);
-    throw new Error(
-      msg,
-    );
+    throw new Error(msg);
   }
   return true;
 };
@@ -29,7 +23,6 @@ const isRoleValid = async (role = '') => {
 
   if (!roleExists) {
     const msg = `Role ${role} not found`;
-    winstonLogger.error(msg);
     throw new Error(msg);
   }
 
@@ -42,7 +35,6 @@ const emailExists = async (email = '') => {
 
   if (checkEmail) {
     const msg = `Mail ${email} already registered`;
-    winstonLogger.error(msg);
     throw new Error(msg);
   }
 
@@ -55,27 +47,24 @@ const categoryExists = async (id = '') => {
 
     if (!checkId) {
       const msg = `Category ID ${id} is not registered`;
-      winstonLogger.error(msg);
-      return false;
+      throw new Error(msg);
     }
 
     return true;
   }
 
-  winstonLogger.error(`The ID ${id} id not valid`);
-  return false;
+  throw new Error(`The ID ${id} id not valid`);
 };
 
 const productExists = async (id = '') => {
   if (!isValidMongoId(id)) {
-    return false;
+    throw new Error(`The ID ${id} id not valid`);
   }
 
   const checkId = await Product.findById(id);
 
   if (!checkId) {
     const msg = `Product ID ${id} is not registered`;
-    winstonLogger.error(msg);
     throw new Error(msg);
   }
 
@@ -84,14 +73,13 @@ const productExists = async (id = '') => {
 
 const userIdExists = async (id = '') => {
   if (!isValidMongoId(id)) {
-    return false;
+    throw new Error(`The ID ${id} id not valid`);
   }
 
   const checkId = await User.findById(id);
 
   if (!checkId) {
     const msg = `ID ${id} is not registered`;
-    winstonLogger.error(msg);
     throw new Error(msg);
   }
 

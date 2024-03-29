@@ -15,24 +15,20 @@ Para definir el entorno de NODE
 ```
 $env:NODE_ENV = 'development'
 ```
-
-## BACKLOG
-- [ ] Completa validation model (60%) | revisar esto para todos los endpoints
-
 ## TODO
-- [ ] Agregar Métricas (50%) | falta agregar métricas personalizadas
-- [ ] Agregar CircuitBreaker/Retry (25%) | requiere convertir en promesas las funciones de los controladores
+- [ ] Completa validation model (60%) | revisar esto para todos los endpoints
+- [ ] Agregar Métricas: falta agregar métricas personalizadas
+- [ ] Completar implementación de CircuitBreaker.
+- [ ] Agregar ejemplo de pruebas unitarias
 
 ## DONE
-- [x] HealthChecks para Mongo
-- [x] ProblemDetails
-- [x] Swagger
-- [x] Logging y persistir logs como archivos
-- [x] HTTP/2. Falta que funcione Swagger con HTTP/2
-- [x] Autenticación por token
-- [x] CORS
-- [x] Reparar getImages
-- [x] HealthChecks general
-- [x] Docker container
-- [x] Rate Limiter
-- [x] Upload files to Mongo
+- HealthChecks para Mongo
+- ProblemDetails
+- Swagger
+- Logging y persistir logs como archivos
+- HTTP/2. Falta que funcione Swagger con HTTP/2
+- Autenticación por token JWT y Google
+- CORS
+- Dockerfile
+- Rate Limiter
+- Upload files to GridFS

@@ -1,6 +1,11 @@
 const { response, request } = require('express');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../utils');
+const {
+  winstonLogger,
+  BreakerState,
+  ProblemDetails,
+  buildCircuit,
+} = require('../utils');
 const { categoriesService } = require('../services');
 
 /**
@@ -13,29 +18,74 @@ const getCategories = async (req = request, res = response, next) => {
   try {
     const { limit = 10, from = 0 } = req.query;
 
-    const [count, categories] = await categoriesService.getAll(from, limit);
+    const circuit = buildCircuit('get-categories', 'get_categories');
 
-    if (count === 0) {
-      const msg = 'There is no categories.';
-      winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Empty collection',
-            msg,
-            'https://example.com/collections/empty',
-            req.originalUrl,
-            StatusCodes.NOT_FOUND
-          )
+    circuit
+      .fn(() => categoriesService.getAll(from, limit))
+      .execute()
+      .then((result) => {
+        const [count, categories] = result;
+
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
         );
-    }
 
-    return res.status(StatusCodes.OK).json({
-      count,
-      categories,
-    });
+        if (count === 0) {
+          const msg = 'There is no categories.';
+          winstonLogger.warn(msg);
+          return res
+            .status(StatusCodes.NOT_FOUND)
+            .set('Content-Type', 'application/problem+json')
+            .json(
+              ProblemDetails.create(
+                'Empty collection',
+                msg,
+                'https://example.com/collections/empty',
+                req.originalUrl,
+                StatusCodes.NOT_FOUND
+              )
+            );
+        }
+
+        return res.status(StatusCodes.OK).json({
+          count,
+          categories,
+        });
+      })
+      .catch((error) => {
+        winstonLogger.error(error.message);
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
+
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return res
+            .status(StatusCodes.SERVICE_UNAVAILABLE)
+            .set('Content-Type', 'application/problem+json')
+            .json(
+              ProblemDetails.create(
+                'Service down',
+                'Categories service is currently down.',
+                'https://example.com/collections/empty',
+                req.originalUrl,
+                StatusCodes.SERVICE_UNAVAILABLE
+              )
+            );
+        }
+        // Fallback Order response
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .set('Content-Type', 'application/problem+json')
+          .json(
+            ProblemDetails.create(
+              'Service down',
+              'Categories service is down.',
+              'https://example.com/collections/empty',
+              req.originalUrl,
+              StatusCodes.INTERNAL_SERVER_ERROR
+            )
+          );
+      });
   } catch (error) {
     next(error);
     return undefined;
@@ -51,26 +101,67 @@ const getCategories = async (req = request, res = response, next) => {
 const getCategoryById = async (req = request, res = response, next) => {
   try {
     const { id } = req.params;
-    const category = await categoriesService.getById(id);
+    const circuit = buildCircuit('get-categories-id', 'get_categories_id');
 
-    if (category != null) {
-      return res.status(StatusCodes.OK).json(category);
-    }
+    circuit
+      .fn(() => categoriesService.getById(id))
+      .execute()
+      .then((result) => {
+        const category = result;
 
-    const msg = `Category with ID ${id} not found`;
-    winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Item not found',
-          msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.NOT_FOUND
-        )
-      );
+        if (category != null) {
+          return res.status(StatusCodes.OK).json(category);
+        }
+
+        const msg = `Category with ID ${id} not found`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .set('Content-Type', 'application/problem+json')
+          .json(
+            ProblemDetails.create(
+              'Item not found',
+              msg,
+              'https://example.com/collections/id-not-found',
+              req.originalUrl,
+              StatusCodes.NOT_FOUND
+            )
+          );
+      })
+      .catch((error) => {
+        winstonLogger.error(error.message);
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
+
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return res
+            .status(StatusCodes.SERVICE_UNAVAILABLE)
+            .set('Content-Type', 'application/problem+json')
+            .json(
+              ProblemDetails.create(
+                'Service down',
+                'Categories service is currently down.',
+                'https://example.com/collections/empty',
+                req.originalUrl,
+                StatusCodes.SERVICE_UNAVAILABLE
+              )
+            );
+        }
+        // Fallback Order response
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .set('Content-Type', 'application/problem+json')
+          .json(
+            ProblemDetails.create(
+              'Service down',
+              'Categories service is down.',
+              'https://example.com/collections/empty',
+              req.originalUrl,
+              StatusCodes.INTERNAL_SERVER_ERROR
+            )
+          );
+      });
   } catch (error) {
     next(error);
     return undefined;
@@ -91,45 +182,92 @@ const putCategories = async (req, res = response, next) => {
     data.userId = req.authUser._id;
     data.name = data.name.toUpperCase();
 
-    const categoryExists = await categoriesService.exists(data.name);
+    const circuit = buildCircuit('update-category', 'update_category');
 
-    if (categoryExists) {
-      const msg = `The category ${data.name} already exists`;
-      winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Possible duplicated item',
-            msg,
-            'https://example.com/collections/duplicated-item',
-            req.originalUrl,
-            StatusCodes.NOT_FOUND
-          )
+    circuit
+      .fn(async () => {
+        const categoryExists = await categoriesService.exists(data.name);
+
+        if (categoryExists) {
+          const msg = `The category ${data.name} already exists`;
+          winstonLogger.warn(msg);
+          return res
+            .status(StatusCodes.BAD_REQUEST)
+            .set('Content-Type', 'application/problem+json')
+            .json(
+              ProblemDetails.create(
+                'Possible duplicated item',
+                msg,
+                'https://example.com/collections/duplicated-item',
+                req.originalUrl,
+                StatusCodes.NOT_FOUND
+              )
+            );
+        }
+
+        return categoriesService.updateById(id, data);
+      })
+      .execute()
+      .then((result) => {
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
         );
-    }
 
-    const category = await categoriesService.updateById(id, data);
+        const category = result;
 
-    if (category != null) {
-      return res.status(StatusCodes.OK).json(category);
-    }
+        if (category != null) {
+          return res.status(StatusCodes.OK).json(category);
+        }
+        console.log('pito');
+        const msg = `There is no category with ID ${id}`;
+        winstonLogger.warn(msg);
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .set('Content-Type', 'application/problem+json')
+          .json(
+            ProblemDetails.create(
+              'Some parameters are invalid.',
+              msg,
+              'https://example.com/collections/id-not-found',
+              req.originalUrl,
+              StatusCodes.BAD_REQUEST
+            )
+          );
+      })
+      .catch((error) => {
+        winstonLogger.error(error.message);
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
 
-    const msg = `There is no category with ID ${id}`;
-    winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Some parameters are invalid.',
-          msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.BAD_REQUEST
-        )
-      );
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return res
+            .status(StatusCodes.SERVICE_UNAVAILABLE)
+            .set('Content-Type', 'application/problem+json')
+            .json(
+              ProblemDetails.create(
+                'Service down',
+                'Categories service is currently down.',
+                'https://example.com/collections/empty',
+                req.originalUrl,
+                StatusCodes.SERVICE_UNAVAILABLE
+              )
+            );
+        }
+        // Fallback Order response
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .set('Content-Type', 'application/problem+json')
+          .json(
+            ProblemDetails.create(
+              'Service down',
+              'Categories service is down.',
+              'https://example.com/collections/empty',
+              req.originalUrl,
+              StatusCodes.INTERNAL_SERVER_ERROR
+            )
+          );
+      });
   } catch (error) {
     next(error);
     return undefined;
