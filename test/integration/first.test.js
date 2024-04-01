@@ -31,29 +31,31 @@ if (fullTest) {
         .get('/api/categories?from=0&limit=10')
         .set('Accept', '*/*')
         .expect('Content-Type', /json/)
-        .expect(401, done);
+        .expect(401);
+
+      done();
     });
   });
 
-// describe('GET /api/products', () => {
-//   it('responds with json', (done) => {
-//     request(app)
-//       .get('/api/products?from=0&limit=10')
-//       .set('Accept', '*/*')
-//       .expect('Content-Type', /json/)
-//       .expect(200, done);
-//   }).timeout(6000);
-// });
-//
-// describe('GET /api/users', () => {
-//   it('responds with json', (done) => {
-//     request(app)
-//       .get('/api/users?from=0&limit=10')
-//       .set('Accept', '*/*')
-//       .expect('Content-Type', /json/)
-//       .expect(200, done);
-//   }).timeout(6000);
-// });
+  // describe('GET /api/products', () => {
+  //   it('responds with json', (done) => {
+  //     request(app)
+  //       .get('/api/products?from=0&limit=10')
+  //       .set('Accept', '*/*')
+  //       .expect('Content-Type', /json/)
+  //       .expect(200, done);
+  //   }).timeout(6000);
+  // });
+  //
+  // describe('GET /api/users', () => {
+  //   it('responds with json', (done) => {
+  //     request(app)
+  //       .get('/api/users?from=0&limit=10')
+  //       .set('Accept', '*/*')
+  //       .expect('Content-Type', /json/)
+  //       .expect(200, done);
+  //   }).timeout(6000);
+  // });
 
   describe('GET /api/roles', () => {
     it('responds with json', (done) => {
@@ -61,7 +63,8 @@ if (fullTest) {
         .get('/api/roles?from=0&limit=10')
         .set('Accept', '*/*')
         .expect('Content-Type', /json/)
-        .expect(401, done);
+        .expect(401);
+      done();
     });
   });
 }

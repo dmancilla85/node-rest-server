@@ -9,7 +9,7 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "test": "mocha --exit ./test/integration",
+    "test": "mocha --exit ./test/**",
     "dev": "nodemon app",
     "serve": "node app"
   },

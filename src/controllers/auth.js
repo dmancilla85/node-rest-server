@@ -1,7 +1,12 @@
 const { response } = require('express');
 const { StatusCodes } = require('http-status-codes');
 const { usersService, authService } = require('../services');
-const { winstonLogger, ProblemDetails } = require('../utils');
+const {
+  winstonLogger,
+  createProblem,
+  buildCircuit,
+  BreakerState,
+} = require('../utils');
 
 /**
  * Login user
@@ -11,70 +16,92 @@ const { winstonLogger, ProblemDetails } = require('../utils');
  */
 const login = async (req, res = response, next) => {
   const { email, password } = req.body;
+  let user;
 
   try {
-    // check if mail exists
-    const user = await usersService.emailExists(email);
+    const circuit = buildCircuit('auth-login', 'auth_login');
 
-    if (!user) {
-      const msg = `User with email ${email} not exists.`;
-      winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
+    circuit
+      .fn(async () => {
+        // check if mail exists
+        user = await usersService.emailExists(email);
+
+        if (!user) {
+          const msg = `User with email ${email} not exists.`;
+          winstonLogger.warn(msg);
+          return createProblem(
+            res,
+            StatusCodes.BAD_REQUEST,
             'Some parameters are invalid.',
             msg,
-            'https://example.com/login/invalid-user',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
-    }
+            'https://example.com/auth/resource-not-found',
+            req.originalUrl
+          );
+        }
 
-    // check user
-    if (!user.active) {
-      const msg = `User ${user.name} is inactive`;
-      winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
+        // check user
+        if (!user.active) {
+          const msg = `User ${user.name} is inactive`;
+          winstonLogger.warn(msg);
+          return createProblem(
+            res,
+            StatusCodes.BAD_REQUEST,
             'Some parameters are invalid.',
             msg,
-            'https://example.com/login/invalid-user',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
-    }
+            'https://example.com/auth/invalid-user',
+            req.originalUrl
+          );
+        }
 
-    // generate JWT
-    const token = await authService.login(user, password);
-
-    if (!token) {
-      const msg = `User with email ${email} has entered an invalid password.`;
-      winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
+        // generate JWT
+        return authService.login(user, password);
+      })
+      .execute()
+      .then((token) => {
+        if (!token) {
+          const msg = `User with email ${email} has entered an invalid password.`;
+          winstonLogger.warn(msg);
+          return createProblem(
+            res,
+            StatusCodes.BAD_REQUEST,
             'Some parameters are invalid.',
             msg,
-            'https://example.com/login/invalid-password',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
-    }
+            'https://example.com/auth/invalid-password',
+            req.originalUrl
+          );
+        }
 
-    return res.status(StatusCodes.OK).json({
-      user,
-      token,
-    });
+        return res.status(StatusCodes.OK).json({
+          user,
+          token,
+        });
+      })
+      .catch((error) => {
+        winstonLogger.error(error.message);
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
+
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Auth service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
+          );
+        }
+        // Fallback Order response
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Auth service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
+      });
   } catch (error) {
     next(error);
     return undefined;
@@ -89,49 +116,100 @@ const login = async (req, res = response, next) => {
  */
 const googleSignIn = async (req, res = response, next) => {
   const { id_token } = req.body;
-
+  let user;
   try {
-    const { name, picture, email } = await authService.googleValidate(id_token);
+    const circuit = buildCircuit('auth-google', 'auth_google');
 
-    if (!email) {
-      throw new Error('Something went wrong with the Google verification');
-    }
+    circuit
+      .fn(async () => {
+        const { name, picture, email } = await authService.googleValidate(
+          id_token
+        );
 
-    // verify email
-    const user = await usersService.emailExists(email);
+        if (!email) {
+          const msg = 'Something went wrong with the Google verification';
+          return createProblem(
+            res,
+            StatusCodes.BAD_REQUEST,
+            'Some parameters are invalid.',
+            msg,
+            'https://example.com/auth/resource-not-found',
+            req.originalUrl
+          );
+        }
 
-    if (!user) {
-      // create new one
-      const data = {
-        email,
-        name,
-        password: ':v',
-        img: picture,
-        google: true,
-      };
+        // verify email
+        user = await usersService.emailExists(email);
 
-      await usersService.create(data);
-    }
+        if (!user) {
+          // create new one
+          const data = {
+            email,
+            name,
+            password: ':v',
+            img: picture,
+            google: true,
+          };
 
-    if (!user.active) {
-      winstonLogger.warn(`User ${user.name} is blocked`);
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        msg: `User ${user.name} is blocked. Please contact the admin`,
+          await usersService.create(data);
+        }
+
+        if (!user.active) {
+          winstonLogger.warn(`User ${user.name} is blocked`);
+          return res.status(StatusCodes.UNAUTHORIZED).json({
+            msg: `User ${user.name} is blocked. Please contact the admin`,
+          });
+        }
+        // generar JWT
+        return authService.loginWithGoogle(user._id);
+      })
+      .execute()
+      .then((token) => {
+        if (!token) {
+          const msg = 'Something went wrong with the JWT generation';
+          return createProblem(
+            res,
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            'Something went wrong.',
+            msg,
+            'https://example.com/auth/internal-error',
+            req.originalUrl
+          );
+        }
+
+        winstonLogger.debug(`User ${user.name} logged succesfully.`);
+
+        return res.status(StatusCodes.OK).json({
+          user,
+          token,
+        });
+      })
+      .catch((error) => {
+        winstonLogger.error(error.message);
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
+
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Auth service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
+          );
+        }
+        // Fallback Order response
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Auth service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
       });
-    }
-    // generar JWT
-    const token = authService.loginWithGoogle(user._id);
-
-    if (!token) {
-      throw new Error('Something went wrong with the JWT generation');
-    }
-
-    winstonLogger.debug(`User ${user.name} logged succesfully.`);
-
-    return res.status(StatusCodes.OK).json({
-      user,
-      token,
-    });
   } catch (error) {
     next(error);
     return undefined;

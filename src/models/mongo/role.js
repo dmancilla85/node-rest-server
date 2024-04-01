@@ -6,6 +6,11 @@ const RoleSchema = Schema({
     required: [true, 'The role name is required'],
     unique: true,
   },
+  active: {
+    type: Boolean,
+    default: true,
+    required: true,
+  },
 });
 
 module.exports = model('Role', RoleSchema);

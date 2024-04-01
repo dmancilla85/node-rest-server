@@ -18,7 +18,6 @@ $env:NODE_ENV = 'development'
 ## TODO
 - [ ] Completa validation model (60%) | revisar esto para todos los endpoints
 - [ ] Agregar Métricas: falta agregar métricas personalizadas
-- [ ] Completar implementación de CircuitBreaker.
 - [ ] Agregar ejemplo de pruebas unitarias
 
 ## DONE
@@ -32,3 +31,4 @@ $env:NODE_ENV = 'development'
 - Dockerfile
 - Rate Limiter
 - Upload files to GridFS
+- CircuitBreaker (SlidingCountBreaker)

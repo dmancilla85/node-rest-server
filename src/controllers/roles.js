@@ -1,6 +1,6 @@
 const { response, request } = require('express');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../utils');
+const { winstonLogger, createProblem } = require('../utils');
 const { rolesService } = require('../services');
 
 /**
@@ -16,20 +16,16 @@ const getRoles = async (req = request, res = response, next) => {
     const [count, elements] = await rolesService.getAll(from, limit);
 
     if (count === 0) {
-      const msg = 'There is no categories.';
+      const msg = 'There is no roles.';
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Empty collection',
-            msg,
-            'https://example.com/collections/empty',
-            req.originalUrl,
-            StatusCodes.NOT_FOUND
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.NOT_FOUND,
+        'Empty collection',
+        msg,
+        'https://example.com/collections/empty',
+        req.originalUrl
+      );
     }
 
     return res.status(StatusCodes.OK).json({
@@ -59,18 +55,14 @@ const getRoleById = async (req = request, res = response, next) => {
 
     const msg = `Role with ID ${id} not found`;
     winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Item not found',
-          msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.NOT_FOUND
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.NOT_FOUND,
+      'Item not found',
+      msg,
+      'https://example.com/collections/id-not-found',
+      req.originalUrl
+    );
   } catch (error) {
     next(error);
     return undefined;
@@ -96,18 +88,15 @@ const putRoles = async (req, res = response, next) => {
     if (exists) {
       const msg = `The role ${data.name} already exists`;
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Possible duplicated item',
-            msg,
-            'https://example.com/collections/duplicated-item',
-            req.originalUrl,
-            StatusCodes.NOT_FOUND
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.BAD_REQUEST,
+        'Possible duplicated item',
+        msg,
+        'https://example.com/collections/duplicated-item',
+        req.originalUrl,
+        StatusCodes.NOT_FOUND
+      );
     }
 
     const element = await rolesService.updateById(id, data);
@@ -118,18 +107,14 @@ const putRoles = async (req, res = response, next) => {
 
     const msg = `There is no role with ID ${id}`;
     winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Some parameters are invalid.',
-          msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.BAD_REQUEST
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.BAD_REQUEST,
+      'Some parameters are invalid.',
+      msg,
+      'https://example.com/collections/id-not-found',
+      req.originalUrl
+    );
   } catch (error) {
     next(error);
     return undefined;
@@ -151,18 +136,14 @@ const postRoles = async (req, res = response, next) => {
     if (exists) {
       const msg = `The role ${name} already exists`;
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Some parameters are invalid.',
-            msg,
-            'https://example.com/categorties/element-already-exists',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.BAD_REQUEST,
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/element-already-exists',
+        req.originalUrl
+      );
     }
 
     // data to save
@@ -177,18 +158,14 @@ const postRoles = async (req, res = response, next) => {
       .then((cat) => res.status(StatusCodes.CREATED).json({ cat }))
       .catch((error) => {
         winstonLogger.error(error.message);
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Something went wrong',
-              error.message,
-              'https://example.com/collections/internal-error',
-              req.originalUrl,
-              StatusCodes.INTERNAL_SERVER_ERROR
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Something went wrong',
+          error.message,
+          'https://example.com/collections/internal-error',
+          req.originalUrl
+        );
       });
   } catch (error) {
     next(error);
@@ -218,18 +195,14 @@ const deleteRoles = async (req, res = response, next) => {
 
     const msg = `There is no role with ID ${id}`;
     winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Some parameters are invalid.',
-          msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.BAD_REQUEST
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.BAD_REQUEST,
+      'Some parameters are invalid.',
+      msg,
+      'https://example.com/collections/id-not-found',
+      req.originalUrl
+    );
   } catch (error) {
     next(error);
     return undefined;
@@ -255,18 +228,14 @@ const patchRoles = async (req, res = response, next) => {
 
     const msg = `There is no role with ID ${id}`;
     winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Some parameters are invalid.',
-          msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.BAD_REQUEST
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.BAD_REQUEST,
+      'Some parameters are invalid.',
+      msg,
+      'https://example.com/collections/id-not-found',
+      req.originalUrl
+    );
   } catch (error) {
     next(error);
     return undefined;

@@ -1,6 +1,6 @@
 const { response } = require('express');
 const { StatusCodes } = require('http-status-codes');
-const { winstonLogger, ProblemDetails } = require('../utils');
+const { winstonLogger, createProblem } = require('../utils');
 const {
   usersService,
   productsService,
@@ -94,18 +94,14 @@ const search = async (req, res = response) => {
   if (!collectionsAllowed.includes(collection)) {
     const msg = `The collections allowed are ${collectionsAllowed}`;
     winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Some parameters are invalid.',
-          msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.BAD_REQUEST
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.BAD_REQUEST,
+      'Some parameters are invalid.',
+      msg,
+      'https://example.com/collections/id-not-found',
+      req.originalUrl
+    );
   }
 
   switch (collection) {
@@ -123,18 +119,14 @@ const search = async (req, res = response) => {
       break;
     default:
       winstonLogger.warn(`Ups! Search for ${collection} not implemented yet`);
-      return res
-        .status(StatusCodes.NOT_IMPLEMENTED)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Some parameters are invalid.',
-            `Ups! Search for ${collection} not implemented yet`,
-            'https://example.com/collections/not-implemented',
-            req.originalUrl,
-            StatusCodes.NOT_IMPLEMENTED
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.NOT_IMPLEMENTED,
+        'Some parameters are invalid.',
+        `Ups! Search for ${collection} not implemented yet`,
+        'https://example.com/collections/not-implemented',
+        req.originalUrl
+      );
   }
 
   return 0;

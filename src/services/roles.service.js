@@ -13,11 +13,7 @@ class RolesService {
 
     return Promise.all([
       this.model.countDocuments(query),
-      this.model
-        .find(query)
-        .populate('userId', 'name')
-        .skip(Number(from))
-        .limit(Number(limit)),
+      this.model.find(query).skip(Number(from)).limit(Number(limit)),
     ]);
   }
 
@@ -26,7 +22,7 @@ class RolesService {
   }
 
   async getById(id) {
-    return this.model.findById(id).populate('userId', 'name');
+    return this.model.findById(id);
   }
 
   // eslint-disable-next-line class-methods-use-this

@@ -1,7 +1,7 @@
 const { response, request } = require('express');
 const { StatusCodes } = require('http-status-codes');
 const { usersService } = require('../services');
-const { winstonLogger, ProblemDetails } = require('../utils');
+const { winstonLogger, createProblem } = require('../utils');
 
 /**
  * Get users collection
@@ -17,18 +17,14 @@ const getUsers = async (req = request, res = response, next) => {
     if (count === 0) {
       const msg = 'There is no users.';
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Empty collection',
-            msg,
-            'https://example.com/collections/empty',
-            req.originalUrl,
-            StatusCodes.NOT_FOUND
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.NOT_FOUND,
+        'Empty collection',
+        msg,
+        'https://example.com/collections/empty',
+        req.originalUrl
+      );
     }
 
     return res.status(StatusCodes.OK).json({
@@ -56,18 +52,14 @@ const getUserById = async (req = request, res = response, next) => {
     if (user === null) {
       const msg = `User with ID ${id} doesn't exist`;
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Item not found',
-            msg,
-            'https://example.com/collections/id-not-found',
-            req.originalUrl,
-            StatusCodes.NOT_FOUND
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.NOT_FOUND,
+        'Item not found',
+        msg,
+        'https://example.com/collections/id-not-found',
+        req.originalUrl
+      );
     }
 
     return res.status(StatusCodes.OK).json(user);
@@ -92,18 +84,14 @@ const putUsers = async (req, res = response, next) => {
     if (user === null) {
       const msg = `There is no user with ID ${id}`;
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Some parameters are invalid.',
-            msg,
-            'https://example.com/collections/id-not-found',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.BAD_REQUEST,
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/id-not-found',
+        req.originalUrl
+      );
     }
 
     if (password) {
@@ -140,18 +128,14 @@ const postUsers = async (req, res = response, next) => {
       .then((usr) => res.status(StatusCodes.CREATED).json({ usr }))
       .catch((error) => {
         winstonLogger.error(error.message);
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Something went wrong',
-              error.message,
-              'https://example.com/collections/internal-error',
-              req.originalUrl,
-              StatusCodes.INTERNAL_SERVER_ERROR
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Something went wrong',
+          error.message,
+          'https://example.com/collections/internal-error',
+          req.originalUrl
+        );
       });
   } catch (error) {
     next(error);
@@ -173,18 +157,14 @@ const deleteUsers = async (req, res = response, next) => {
     if (user === null) {
       const msg = `There is no user with ID ${id}`;
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Some parameters are invalid.',
-            msg,
-            'https://example.com/collections/id-not-found',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.BAD_REQUEST,
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/id-not-found',
+        req.originalUrl
+      );
     }
 
     return res.status(StatusCodes.OK).json({
@@ -210,18 +190,14 @@ const patchUsers = async (req, res = response, next) => {
     if (user === null) {
       const msg = `There is no user with ID ${id}`;
       winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Some parameters are invalid.',
-            msg,
-            'https://example.com/collections/id-not-found',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.BAD_REQUEST,
+        'Some parameters are invalid.',
+        msg,
+        'https://example.com/collections/id-not-found',
+        req.originalUrl
+      );
     }
 
     return res.status(StatusCodes.OK).json({

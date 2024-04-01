@@ -3,8 +3,8 @@ const { StatusCodes } = require('http-status-codes');
 const {
   winstonLogger,
   BreakerState,
-  ProblemDetails,
   buildCircuit,
+  createProblem,
 } = require('../utils');
 const { categoriesService } = require('../services');
 
@@ -33,18 +33,14 @@ const getCategories = async (req = request, res = response, next) => {
         if (count === 0) {
           const msg = 'There is no categories.';
           winstonLogger.warn(msg);
-          return res
-            .status(StatusCodes.NOT_FOUND)
-            .set('Content-Type', 'application/problem+json')
-            .json(
-              ProblemDetails.create(
-                'Empty collection',
-                msg,
-                'https://example.com/collections/empty',
-                req.originalUrl,
-                StatusCodes.NOT_FOUND
-              )
-            );
+          return createProblem(
+            res,
+            StatusCodes.NOT_FOUND,
+            'Empty collection',
+            msg,
+            'https://example.com/collections/empty',
+            req.originalUrl
+          );
         }
 
         return res.status(StatusCodes.OK).json({
@@ -59,32 +55,24 @@ const getCategories = async (req = request, res = response, next) => {
         );
 
         if (circuit.modules[0].state === BreakerState.CLOSED) {
-          return res
-            .status(StatusCodes.SERVICE_UNAVAILABLE)
-            .set('Content-Type', 'application/problem+json')
-            .json(
-              ProblemDetails.create(
-                'Service down',
-                'Categories service is currently down.',
-                'https://example.com/collections/empty',
-                req.originalUrl,
-                StatusCodes.SERVICE_UNAVAILABLE
-              )
-            );
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Categories service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
+          );
         }
         // Fallback Order response
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Service down',
-              'Categories service is down.',
-              'https://example.com/collections/empty',
-              req.originalUrl,
-              StatusCodes.INTERNAL_SERVER_ERROR
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Categories service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
       });
   } catch (error) {
     next(error);
@@ -115,18 +103,14 @@ const getCategoryById = async (req = request, res = response, next) => {
 
         const msg = `Category with ID ${id} not found`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Item not found',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.NOT_FOUND
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Resource not found',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       })
       .catch((error) => {
         winstonLogger.error(error.message);
@@ -135,32 +119,24 @@ const getCategoryById = async (req = request, res = response, next) => {
         );
 
         if (circuit.modules[0].state === BreakerState.CLOSED) {
-          return res
-            .status(StatusCodes.SERVICE_UNAVAILABLE)
-            .set('Content-Type', 'application/problem+json')
-            .json(
-              ProblemDetails.create(
-                'Service down',
-                'Categories service is currently down.',
-                'https://example.com/collections/empty',
-                req.originalUrl,
-                StatusCodes.SERVICE_UNAVAILABLE
-              )
-            );
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Categories service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
+          );
         }
         // Fallback Order response
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Service down',
-              'Categories service is down.',
-              'https://example.com/collections/empty',
-              req.originalUrl,
-              StatusCodes.INTERNAL_SERVER_ERROR
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Categories service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
       });
   } catch (error) {
     next(error);
@@ -191,18 +167,14 @@ const putCategories = async (req, res = response, next) => {
         if (categoryExists) {
           const msg = `The category ${data.name} already exists`;
           winstonLogger.warn(msg);
-          return res
-            .status(StatusCodes.BAD_REQUEST)
-            .set('Content-Type', 'application/problem+json')
-            .json(
-              ProblemDetails.create(
-                'Possible duplicated item',
-                msg,
-                'https://example.com/collections/duplicated-item',
-                req.originalUrl,
-                StatusCodes.NOT_FOUND
-              )
-            );
+          return createProblem(
+            res,
+            StatusCodes.BAD_REQUEST,
+            'Possible duplicated resource',
+            msg,
+            'https://example.com/collections/duplicated-item',
+            req.originalUrl
+          );
         }
 
         return categoriesService.updateById(id, data);
@@ -218,21 +190,17 @@ const putCategories = async (req, res = response, next) => {
         if (category != null) {
           return res.status(StatusCodes.OK).json(category);
         }
-        console.log('pito');
+
         const msg = `There is no category with ID ${id}`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Some parameters are invalid.',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.BAD_REQUEST
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
+          'Some parameters are invalid',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       })
       .catch((error) => {
         winstonLogger.error(error.message);
@@ -241,32 +209,24 @@ const putCategories = async (req, res = response, next) => {
         );
 
         if (circuit.modules[0].state === BreakerState.CLOSED) {
-          return res
-            .status(StatusCodes.SERVICE_UNAVAILABLE)
-            .set('Content-Type', 'application/problem+json')
-            .json(
-              ProblemDetails.create(
-                'Service down',
-                'Categories service is currently down.',
-                'https://example.com/collections/empty',
-                req.originalUrl,
-                StatusCodes.SERVICE_UNAVAILABLE
-              )
-            );
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Categories service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
+          );
         }
         // Fallback Order response
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Service down',
-              'Categories service is down.',
-              'https://example.com/collections/empty',
-              req.originalUrl,
-              StatusCodes.INTERNAL_SERVER_ERROR
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Categories service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
       });
   } catch (error) {
     next(error);
@@ -283,50 +243,62 @@ const putCategories = async (req, res = response, next) => {
 const postCategories = async (req, res = response, next) => {
   try {
     const name = req.body.name.toUpperCase();
+    const circuit = buildCircuit('create-category', 'create_category');
 
-    const categoryExists = await categoriesService.exists(name);
+    circuit
+      .fn(async () => {
+        const categoryExists = await categoriesService.exists(name);
 
-    if (categoryExists) {
-      const msg = `The category ${name} already exists`;
-      winstonLogger.warn(msg);
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
+        if (categoryExists) {
+          const msg = `The category ${name} already exists`;
+          winstonLogger.warn(msg);
+
+          return createProblem(
+            res,
+            StatusCodes.BAD_REQUEST,
             'Some parameters are invalid.',
             msg,
-            'https://example.com/categorties/element-already-exists',
-            req.originalUrl,
-            StatusCodes.BAD_REQUEST
-          )
-        );
-    }
+            'https://example.com/categories/element-already-exists',
+            req.originalUrl
+          );
+        }
 
-    // data to save
-    const data = {
-      name,
-      userId: req.authUser._id,
-    };
+        // data to save
+        const data = {
+          name,
+          userId: req.authUser._id,
+        };
 
-    // save to DB
-    return categoriesService
-      .create(data)
+        // save to DB
+        return categoriesService.create(data);
+      })
+      .execute()
       .then((cat) => res.status(StatusCodes.CREATED).json({ cat }))
       .catch((error) => {
         winstonLogger.error(error.message);
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Something went wrong',
-              error.message,
-              'https://example.com/collections/internal-error',
-              req.originalUrl,
-              StatusCodes.INTERNAL_SERVER_ERROR
-            )
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
+
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Categories service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
           );
+        }
+        // Fallback Order response
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Categories service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
       });
   } catch (error) {
     next(error);
@@ -342,29 +314,55 @@ const postCategories = async (req, res = response, next) => {
 const deleteCategories = async (req, res = response, next) => {
   try {
     const { id } = req.params;
+    const circuit = buildCircuit('delete-category', 'delete_category');
 
-    const category = await categoriesService.deleteById(id);
+    circuit
+      .fn(async () => categoriesService.deleteById(id))
+      .execute()
+      .then((category) => {
+        if (category != null) {
+          return res.status(StatusCodes.OK).json({
+            category,
+          });
+        }
 
-    if (category != null) {
-      return res.status(StatusCodes.OK).json({
-        category,
-      });
-    }
-
-    const msg = `There is no category with ID ${id}`;
-    winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
+        const msg = `There is no category with ID ${id}`;
+        winstonLogger.warn(msg);
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
           'Some parameters are invalid.',
           msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.BAD_REQUEST
-        )
-      );
+          'https://example.com/categories/resource-not-found',
+          req.originalUrl
+        );
+      })
+      .catch((error) => {
+        winstonLogger.error(error.message);
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
+
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Categories service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
+          );
+        }
+        // Fallback Order response
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Categories service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
+      });
   } catch (error) {
     next(error);
     return undefined;
@@ -380,28 +378,55 @@ const patchCategories = async (req, res = response, next) => {
   const { id } = req.params;
 
   try {
-    const category = await categoriesService.disableById(id);
+    const circuit = buildCircuit('delete-category', 'delete_category');
 
-    if (category != null) {
-      return res.status(StatusCodes.OK).json({
-        category,
-      });
-    }
+    circuit
+      .fn(async () => categoriesService.disableById(id))
+      .execute()
+      .then((category) => {
+        if (category != null) {
+          return res.status(StatusCodes.OK).json({
+            category,
+          });
+        }
 
-    const msg = `There is no category with ID ${id}`;
-    winstonLogger.warn(msg);
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
+        const msg = `There is no category with ID ${id}`;
+        winstonLogger.warn(msg);
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
           'Some parameters are invalid.',
           msg,
-          'https://example.com/collections/id-not-found',
-          req.originalUrl,
-          StatusCodes.BAD_REQUEST
-        )
-      );
+          'https://example.com/categories/resource-not-found',
+          req.originalUrl
+        );
+      })
+      .catch((error) => {
+        winstonLogger.error(error.message);
+        winstonLogger.debug(
+          `Circuit ${circuit.name} state is ${circuit.modules[0].state}.`
+        );
+
+        if (circuit.modules[0].state === BreakerState.CLOSED) {
+          return createProblem(
+            res,
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'Service down',
+            'Categories service is currently down.',
+            'https://example.com/service-unavailable',
+            req.originalUrl
+          );
+        }
+        // Fallback Order response
+        return createProblem(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          'Service down',
+          'Categories service is down.',
+          'https://example.com/service-unavailable',
+          req.originalUrl
+        );
+      });
   } catch (error) {
     next(error);
     return undefined;

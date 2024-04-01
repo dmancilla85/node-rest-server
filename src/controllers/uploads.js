@@ -9,7 +9,7 @@ const {
   productsService,
   cloudinaryService,
 } = require('../services');
-const { winstonLogger, ProblemDetails, uploadFile } = require('../utils');
+const { winstonLogger, createProblem, uploadFile } = require('../utils');
 
 /**
  * Check if string is a valid URL
@@ -60,18 +60,14 @@ const uploadFiles = async (req, res = response) => {
     });
   } catch (error) {
     winstonLogger.error(error.message);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Something went wrong',
+      error.message,
+      'https://example.com/collections/internal-error',
+      req.originalUrl
+    );
   }
 
   return 0;
@@ -95,18 +91,14 @@ const updateLocalImage = async (req, res = response) => {
       if (!model) {
         const msg = `User with ${id} not exists`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Some parameters are invalid.',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.BAD_REQUEST
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       }
       break;
 
@@ -116,33 +108,25 @@ const updateLocalImage = async (req, res = response) => {
       if (!model) {
         const msg = `Product with ${id} not exists`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Some parameters are invalid.',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.BAD_REQUEST
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       }
       break;
     default:
-      return res
-        .status(StatusCodes.NOT_IMPLEMENTED)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Some parameters are invalid.',
-            `Ups! Upload for ${collection} not implemented`,
-            'https://example.com/collections/not-implemented',
-            req.originalUrl,
-            StatusCodes.NOT_IMPLEMENTED
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.NOT_IMPLEMENTED,
+        'Some parameters are invalid.',
+        `Ups! Upload for ${collection} not implemented`,
+        'https://example.com/collections/not-implemented',
+        req.originalUrl
+      );
   }
 
   try {
@@ -161,18 +145,14 @@ const updateLocalImage = async (req, res = response) => {
     }
   } catch (error) {
     winstonLogger.error(error.message);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Something went wrong',
+      error.message,
+      'https://example.com/collections/internal-error',
+      req.originalUrl
+    );
   }
 
   try {
@@ -182,18 +162,14 @@ const updateLocalImage = async (req, res = response) => {
     await model.save();
   } catch (error) {
     winstonLogger.error(error.message);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Something went wrong',
+      error.message,
+      'https://example.com/collections/internal-error',
+      req.originalUrl
+    );
   }
 
   return res.json(model);
@@ -217,18 +193,14 @@ const updateImageCloudinary = async (req, res = response) => {
       if (!model) {
         const msg = `User with ID ${id} not exists`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Some parameters are invalid.',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.BAD_REQUEST
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       }
       break;
 
@@ -238,18 +210,14 @@ const updateImageCloudinary = async (req, res = response) => {
       if (!model) {
         const msg = `Product with ID ${id} not exists`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Some parameters are invalid.',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.BAD_REQUEST
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       }
       break;
     default:
@@ -277,18 +245,14 @@ const updateImageCloudinary = async (req, res = response) => {
     }
   } catch (error) {
     winstonLogger.error(error.message);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Something went wrong',
+      error.message,
+      'https://example.com/collections/internal-error',
+      req.originalUrl
+    );
   }
 
   try {
@@ -299,18 +263,14 @@ const updateImageCloudinary = async (req, res = response) => {
     await model.save();
   } catch (error) {
     winstonLogger.error(error.message);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Something went wrong',
+      error.message,
+      'https://example.com/collections/internal-error',
+      req.originalUrl
+    );
   }
 
   return res.status(StatusCodes.OK).json(model);
@@ -334,18 +294,14 @@ const getImage = async (req, res = response) => {
       if (!model) {
         const msg = `User with ID ${id} not exists`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Some parameters are invalid.',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.BAD_REQUEST
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       }
       break;
 
@@ -355,34 +311,26 @@ const getImage = async (req, res = response) => {
       if (!model) {
         const msg = `Product with ID ${id} not exists`;
         winstonLogger.warn(msg);
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .set('Content-Type', 'application/problem+json')
-          .json(
-            ProblemDetails.create(
-              'Some parameters are invalid.',
-              msg,
-              'https://example.com/collections/id-not-found',
-              req.originalUrl,
-              StatusCodes.BAD_REQUEST
-            )
-          );
+        return createProblem(
+          res,
+          StatusCodes.BAD_REQUEST,
+          'Some parameters are invalid.',
+          msg,
+          'https://example.com/collections/id-not-found',
+          req.originalUrl
+        );
       }
       break;
     default:
       winstonLogger.warn(`Method for ${collection} not implemented`);
-      return res
-        .status(StatusCodes.NOT_IMPLEMENTED)
-        .set('Content-Type', 'application/problem+json')
-        .json(
-          ProblemDetails.create(
-            'Some parameters are invalid.',
-            `Ups! Upload for ${collection} not implemented`,
-            'https://example.com/collections/not-implemented',
-            req.originalUrl,
-            StatusCodes.NOT_IMPLEMENTED
-          )
-        );
+      return createProblem(
+        res,
+        StatusCodes.NOT_IMPLEMENTED,
+        'Some parameters are invalid.',
+        `Ups! Upload for ${collection} not implemented`,
+        'https://example.com/collections/not-implemented',
+        req.originalUrl
+      );
   }
 
   try {
@@ -427,18 +375,14 @@ const getImage = async (req, res = response) => {
     }
   } catch (error) {
     winstonLogger.error(error.message);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Something went wrong',
+      error.message,
+      'https://example.com/collections/internal-error',
+      req.originalUrl
+    );
   }
 
   try {
@@ -451,18 +395,14 @@ const getImage = async (req, res = response) => {
     }
   } catch (error) {
     winstonLogger.error(error.message);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Something went wrong',
-          error.message,
-          'https://example.com/collections/internal-error',
-          req.originalUrl,
-          StatusCodes.INTERNAL_SERVER_ERROR
-        )
-      );
+    return createProblem(
+      res,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Something went wrong',
+      error.message,
+      'https://example.com/collections/internal-error',
+      req.originalUrl
+    );
   }
 };
 
