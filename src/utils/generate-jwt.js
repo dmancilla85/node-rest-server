@@ -5,8 +5,6 @@ const generateJWT = async (uid = '') =>
   new Promise((resolve, reject) => {
     const payload = { uid };
 
-    console.log(payload);
-
     jwt.sign(
       payload,
       process.env.SECRET_KEY,

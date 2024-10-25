@@ -1,6 +1,6 @@
 const { StatusCodes } = require('http-status-codes');
 const jwt = require('jsonwebtoken');
-const { winstonLogger, ProblemDetails } = require('../utils');
+const { winstonLogger, createProblem } = require('../utils');
 const { User } = require('../models');
 
 const validateJWT = async (req, res, next) => {
@@ -9,18 +9,15 @@ const validateJWT = async (req, res, next) => {
   if (!token) {
     const msg = 'There is no token in the request';
     winstonLogger.error(msg);
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .set('Content-Type', 'application/problem+json')
-      .json(
-        ProblemDetails.create(
-          'Token is missing',
-          msg,
-          'https://example.com/auth/invalid-token',
-          req.originalUrl,
-          StatusCodes.UNAUTHORIZED
-        )
-      );
+
+    return createProblem(
+      res,
+      StatusCodes.UNAUTHORIZED,
+      'Token is missing',
+      msg,
+      'https://example.com/auth/invalid-token',
+      req.originalUrl
+    );
   }
 
   try {
